@@ -3,7 +3,10 @@ package main
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"regexp"
+	"runtime"
+	"strings"
 	"sync"
 	"time"
 
@@ -75,19 +78,95 @@ func parseMessage(
 	}
 	r, err := mail.CreateReader(f)
 	if err != nil {
-		fmt.Println("reader error")
+		fmt.Println(err)
 		headers <- &mail.Header{}
 		return
 	}
 	h := &mail.Header{Header: r.Header.Header}
 	f.Close()
 	headers <- h
-	fmt.Println("finished")
 	return
-	// fmt.Println(h.Text("to"))
-	// fmt.Println(h.Text("from"))
-	// fmt.Println(h.Text("cc"))
-	// fmt.Println(h.Text("bcc"))
-	// t, _ := parseDate(&h)
-	// fmt.Println(t.Unix())
+}
+
+func processHeaders(
+	headers chan *mail.Header,
+	retvalchan chan map[string]AddressData,
+) {
+	count := 0
+	classmap := map[string]int{"to": 2, "cc": 1, "bcc": 2, "from": 0}
+	retval := make(map[string]AddressData)
+	fields := [4]string{"to", "cc", "bcc", "from"}
+	for h := range headers {
+		count++
+		fmt.Println(count)
+		time, err := h.Date()
+		if err != nil {
+			continue
+		}
+		for _, field := range fields {
+			header, err := h.AddressList(field)
+			if err != nil {
+				continue
+			}
+			for _, address := range header {
+				if aD, ok := retval[address.Address]; ok {
+					aD.Names = append(aD.Names, address.Name)
+					if aD.Class < classmap[field] {
+						aD.Class = classmap[field]
+					}
+					if aD.Date < time.Unix() {
+						aD.Date = time.Unix()
+					}
+					retval[address.Address] = aD
+				} else {
+					aD := AddressData{}
+					aD.Names = append(aD.Names, address.Name)
+					aD.Date = time.Unix()
+					aD.Class = classmap[field]
+					retval[address.Address] = aD
+				}
+
+			}
+		}
+
+	}
+	fmt.Println("here")
+	retvalchan <- retval
+	fmt.Println("here2")
+}
+
+func walkMaildir(path string) map[string]AddressData {
+	headers := make(chan *mail.Header)
+	concurrent := runtime.GOMAXPROCS(2 * runtime.NumCPU())
+	semaphore := make(chan struct{}, concurrent)
+	retvalchan := make(chan map[string]AddressData)
+	var wg sync.WaitGroup
+	filepath.Walk(path, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if strings.HasPrefix(filepath.Base(path), ".") {
+			return nil
+		}
+
+		if info.IsDir() {
+			return nil
+		}
+		switch filepath.Base(filepath.Dir(path)) {
+		case "new", "tmp", "cur":
+			wg.Add(1)
+			go parseMessage(path, headers, semaphore, &wg)
+		default:
+			return nil
+		}
+		return nil
+	})
+	go processHeaders(headers, retvalchan)
+	wg.Wait()
+	close(headers)
+	close(semaphore)
+	retval := <-retvalchan
+	close(retvalchan)
+	return retval
+
 }
