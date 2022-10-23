@@ -2,11 +2,13 @@ package main
 
 import (
 	"fmt"
-	_ "github.com/emersion/go-message/charset"
-	"github.com/emersion/go-message/mail"
 	"os"
 	"regexp"
+	"sync"
 	"time"
+
+	_ "github.com/emersion/go-message/charset"
+	"github.com/emersion/go-message/mail"
 )
 
 // RFC 1123Z regexp
@@ -54,16 +56,38 @@ func parseReceivedHeader(h *mail.Header) (time.Time, error) {
 	return time.Parse(time.RFC1123Z, dateRe.FindString(guess))
 }
 
-func parseMessage(path string) {
-	f, _ := os.Open(path)
-	r, _ := mail.CreateReader(f)
+func parseMessage(
+	path string,
+	headers chan<- *mail.Header,
+	semaphore chan struct{},
+	wg *sync.WaitGroup,
+) {
+	semaphore <- struct{}{}
+	defer func() {
+		<-semaphore
+		wg.Done()
+	}()
+	f, err := os.Open(path)
+	if err != nil {
+		fmt.Println(err)
+		headers <- &mail.Header{}
+		return
+	}
+	r, err := mail.CreateReader(f)
+	if err != nil {
+		fmt.Println("reader error")
+		headers <- &mail.Header{}
+		return
+	}
 	h := &mail.Header{Header: r.Header.Header}
-	fmt.Println(h.Subject())
-	fmt.Println(h.Text("to"))
-	fmt.Println(h.Text("from"))
-	fmt.Println(h.Text("cc"))
-	fmt.Println(h.Text("bcc"))
-	t, _ := parseDate(h)
-	fmt.Println(t.Unix())
-
+	f.Close()
+	headers <- h
+	fmt.Println("finished")
+	return
+	// fmt.Println(h.Text("to"))
+	// fmt.Println(h.Text("from"))
+	// fmt.Println(h.Text("cc"))
+	// fmt.Println(h.Text("bcc"))
+	// t, _ := parseDate(&h)
+	// fmt.Println(t.Unix())
 }
