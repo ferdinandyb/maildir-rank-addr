@@ -98,7 +98,6 @@ func processHeaders(
 	fields := [4]string{"to", "cc", "bcc", "from"}
 	for h := range headers {
 		count++
-		fmt.Println(count)
 		time, err := h.Date()
 		if err != nil {
 			continue
@@ -110,7 +109,7 @@ func processHeaders(
 			}
 			for _, address := range header {
 				if aD, ok := retval[address.Address]; ok {
-					aD.Names = append(aD.Names, address.Name)
+					aD.Names = append(aD.Names, strings.TrimSpace(address.Name))
 					if aD.Class < classmap[field] {
 						aD.Class = classmap[field]
 					}
@@ -120,7 +119,7 @@ func processHeaders(
 					retval[address.Address] = aD
 				} else {
 					aD := AddressData{}
-					aD.Names = append(aD.Names, address.Name)
+					aD.Names = append(aD.Names, strings.TrimSpace(address.Name))
 					aD.Date = time.Unix()
 					aD.Class = classmap[field]
 					retval[address.Address] = aD
@@ -130,9 +129,8 @@ func processHeaders(
 		}
 
 	}
-	fmt.Println("here")
+	fmt.Println("Read ", count, " messages")
 	retvalchan <- retval
-	fmt.Println("here2")
 }
 
 func walkMaildir(path string) map[string]AddressData {

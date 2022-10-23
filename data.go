@@ -7,4 +7,6 @@ type AddressData struct {
 	RecencyRank   int
 	TotalRank     int
 	Date          int64
+	Num           int
+	Name          string
 }
