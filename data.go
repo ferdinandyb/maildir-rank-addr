@@ -1,6 +1,7 @@
 package main
 
 type AddressData struct {
+	Address       string
 	Names         []string
 	Class         int
 	FrequencyRank int
@@ -9,4 +10,11 @@ type AddressData struct {
 	Date          int64
 	Num           int
 	Name          string
+}
+
+type Config struct {
+	maildir    string
+	outputpath string
+	addresses  []string
+	template   string
 }

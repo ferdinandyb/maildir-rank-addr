@@ -88,17 +88,65 @@ func parseMessage(
 	return
 }
 
+func assignClass(
+	address *mail.Address,
+	field string,
+	sender string,
+	addresses []string,
+) int {
+	if field == "from" {
+		return 0
+	}
+
+	for _, addr := range addresses {
+		if addr == sender {
+			switch field {
+			case "to", "bcc":
+				return 2
+			case "cc":
+				return 1
+			}
+		}
+	}
+	return 0
+}
+
+func filterAddress(address *mail.Address) bool {
+	FILTERLIST := []string{
+		"do-not-reply",
+		"no-reply",
+		"bounce",
+		"noreply",
+	}
+	firstpart := strings.Split(address.Address, "@")[0]
+	for _, filt := range FILTERLIST {
+		if strings.Contains(firstpart, filt) {
+			return true
+		}
+	}
+	return false
+
+}
+
 func processHeaders(
 	headers chan *mail.Header,
 	retvalchan chan map[string]AddressData,
+	addresses []string,
 ) {
 	count := 0
-	classmap := map[string]int{"to": 2, "cc": 1, "bcc": 2, "from": 0}
+	shouldAssignClass := len(addresses) > 0
 	retval := make(map[string]AddressData)
 	fields := [4]string{"to", "cc", "bcc", "from"}
 	for h := range headers {
 		count++
 		time, err := h.Date()
+		senderaddress, err := h.AddressList("from")
+		var sender string
+		if len(senderaddress) > 0 {
+			sender = senderaddress[0].Address
+		} else {
+			sender = ""
+		}
 		if err != nil {
 			continue
 		}
@@ -108,10 +156,21 @@ func processHeaders(
 				continue
 			}
 			for _, address := range header {
+				if filterAddress(address) {
+					continue
+				}
 				if aD, ok := retval[address.Address]; ok {
-					aD.Names = append(aD.Names, strings.TrimSpace(address.Name))
-					if aD.Class < classmap[field] {
-						aD.Class = classmap[field]
+					aD.Names = append(aD.Names, address.Name)
+					if shouldAssignClass {
+						aC := assignClass(
+							address,
+							field,
+							sender,
+							addresses,
+						)
+						if aD.Class < aC {
+							aD.Class = aC
+						}
 					}
 					if aD.Date < time.Unix() {
 						aD.Date = time.Unix()
@@ -119,13 +178,24 @@ func processHeaders(
 					retval[address.Address] = aD
 				} else {
 					aD := AddressData{}
-					aD.Names = append(aD.Names, strings.TrimSpace(address.Name))
+					aD.Names = append(aD.Names, address.Name)
 					aD.Date = time.Unix()
-					aD.Class = classmap[field]
+					aD.Address = address.Address
+					if shouldAssignClass {
+						aD.Class = assignClass(
+							address,
+							field,
+							sender,
+							addresses,
+						)
+					} else {
+						aD.Class = 2
+					}
 					retval[address.Address] = aD
 				}
 
 			}
+
 		}
 
 	}
@@ -133,7 +203,7 @@ func processHeaders(
 	retvalchan <- retval
 }
 
-func walkMaildir(path string) map[string]AddressData {
+func walkMaildir(path string, addresses []string) map[string]AddressData {
 	headers := make(chan *mail.Header)
 	concurrent := runtime.GOMAXPROCS(2 * runtime.NumCPU())
 	semaphore := make(chan struct{}, concurrent)
@@ -159,7 +229,7 @@ func walkMaildir(path string) map[string]AddressData {
 		}
 		return nil
 	})
-	go processHeaders(headers, retvalchan)
+	go processHeaders(headers, retvalchan, addresses)
 	wg.Wait()
 	close(headers)
 	close(semaphore)

@@ -2,13 +2,32 @@ package main
 
 import (
 	"sort"
+	"strings"
 )
 
 func getMostFrequent(names []string) string {
-	return names[0]
+	counter := make(map[string]int)
+	for _, name := range names {
+		if _, ok := counter[name]; ok {
+			counter[name] = 1
+		} else {
+			counter[name] = counter[name] + 1
+		}
+	}
+	maxcount := 0
+	lastname := names[0]
+	for name, counter := range counter {
+		if counter > maxcount {
+			lastname = name
+			maxcount = counter
+		}
+	}
+	lastname = strings.TrimSpace(lastname)
+	lastname = strings.Replace(lastname, "\"", "", -1)
+	return lastname
 }
 
-func normalize(aD AddressData) AddressData {
+func normalizeAddressNames(aD AddressData) AddressData {
 	aD.Name = getMostFrequent(aD.Names)
 	aD.Num = len(aD.Names)
 	return aD
@@ -25,7 +44,7 @@ func calculateRanks(data map[string]AddressData) map[int]map[string]AddressData 
 		0: map[string]AddressData{},
 	}
 	for addr, value := range data {
-		classedData[value.Class][addr] = normalize(value)
+		classedData[value.Class][addr] = normalizeAddressNames(value)
 	}
 
 	for class := 2; class >= 0; class-- {
