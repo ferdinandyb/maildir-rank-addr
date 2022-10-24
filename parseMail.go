@@ -196,7 +196,6 @@ func processHeaders(
 					}
 					retval[normaddr] = aD
 				}
-
 			}
 
 		}
@@ -224,7 +223,7 @@ func walkMaildir(path string, addresses []string) map[string]AddressData {
 			return nil
 		}
 		switch filepath.Base(filepath.Dir(path)) {
-		case "new", "tmp", "cur":
+		case "new", "cur":
 			wg.Add(1)
 			go parseMessage(path, headers, semaphore, &wg)
 		default:
@@ -239,5 +238,4 @@ func walkMaildir(path string, addresses []string) map[string]AddressData {
 	retval := <-retvalchan
 	close(retvalchan)
 	return retval
-
 }
