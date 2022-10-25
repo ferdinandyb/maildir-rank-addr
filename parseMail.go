@@ -59,33 +59,26 @@ func parseReceivedHeader(h *mail.Header) (time.Time, error) {
 	return time.Parse(time.RFC1123Z, dateRe.FindString(guess))
 }
 
-func parseMessage(
-	path string,
+func messageParser(
+	paths chan string,
 	headers chan<- *mail.Header,
-	semaphore chan struct{},
-	wg *sync.WaitGroup,
 ) {
-	semaphore <- struct{}{}
-	defer func() {
-		<-semaphore
-		wg.Done()
-	}()
-	f, err := os.Open(path)
-	if err != nil {
-		fmt.Println(err)
-		headers <- &mail.Header{}
-		return
+	for path := range paths {
+		f, err := os.Open(path)
+		if err != nil {
+			fmt.Println(err)
+			continue
+		}
+		r, err := mail.CreateReader(f)
+		if err != nil {
+			fmt.Println(err)
+			f.Close()
+			continue
+		}
+		h := &mail.Header{Header: r.Header.Header}
+		f.Close()
+		headers <- h
 	}
-	r, err := mail.CreateReader(f)
-	if err != nil {
-		fmt.Println(err)
-		headers <- &mail.Header{}
-		return
-	}
-	h := &mail.Header{Header: r.Header.Header}
-	f.Close()
-	headers <- h
-	return
 }
 
 func assignClass(
@@ -132,11 +125,10 @@ func filterAddress(address string) bool {
 		}
 	}
 	return false
-
 }
 
 func processHeaders(
-	headers chan *mail.Header,
+	headers <-chan *mail.Header,
 	retvalchan chan map[string]AddressData,
 	addresses []string,
 ) {
@@ -146,8 +138,13 @@ func processHeaders(
 	for h := range headers {
 		count++
 		time, err := h.Date()
+		if err != nil {
+			continue
+		}
+
 		senderaddress, err := h.AddressList("from")
 		var sender string
+
 		if len(senderaddress) > 0 {
 			sender = strings.ToLower(senderaddress[0].Address)
 		} else {
@@ -156,6 +153,7 @@ func processHeaders(
 		if err != nil {
 			continue
 		}
+
 		for _, field := range fields {
 			header, err := h.AddressList(field)
 			if err != nil {
@@ -207,14 +205,26 @@ func processHeaders(
 	}
 	fmt.Println("Read ", count, " messages")
 	retvalchan <- retval
+	close(retvalchan)
 }
 
 func walkMaildir(path string, addresses []string) map[string]AddressData {
 	headers := make(chan *mail.Header)
-	concurrent := runtime.GOMAXPROCS(2 * runtime.NumCPU())
-	semaphore := make(chan struct{}, concurrent)
-	retvalchan := make(chan map[string]AddressData)
+	messagePaths := make(chan string, 4096)
+
 	var wg sync.WaitGroup
+	for i := 0; i < 2*runtime.NumCPU(); i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+
+			messageParser(messagePaths, headers)
+		}()
+	}
+
+	retvalchan := make(chan map[string]AddressData)
+	go processHeaders(headers, retvalchan, addresses)
+
 	filepath.Walk(path, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
@@ -228,18 +238,14 @@ func walkMaildir(path string, addresses []string) map[string]AddressData {
 		}
 		switch filepath.Base(filepath.Dir(path)) {
 		case "new", "cur":
-			wg.Add(1)
-			go parseMessage(path, headers, semaphore, &wg)
-		default:
-			return nil
+			messagePaths <- path
 		}
 		return nil
 	})
-	go processHeaders(headers, retvalchan, addresses)
+	close(messagePaths)
+
 	wg.Wait()
 	close(headers)
-	close(semaphore)
-	retval := <-retvalchan
-	close(retvalchan)
-	return retval
+
+	return <-retvalchan
 }
