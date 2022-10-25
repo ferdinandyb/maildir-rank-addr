@@ -7,8 +7,8 @@ type AddressData struct {
 	FrequencyRank int
 	RecencyRank   int
 	TotalRank     int
-	ClassCount    map[int]int
-	ClassDate     map[int]int64
+	ClassCount    [3]int
+	ClassDate     [3]int64
 	Name          string
 }
 

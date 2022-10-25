@@ -184,17 +184,9 @@ func processHeaders(
 					aD.Address = normaddr
 					aD.Class = class
 					aD.Names = append(aD.Names, address.Name)
-					aD.ClassDate = map[int]int64{
-						2: 0,
-						1: 0,
-						0: 0,
-					}
+					aD.ClassDate = [3]int64{0, 0, 0}
 					aD.ClassDate[class] = time.Unix()
-					aD.ClassCount = map[int]int{
-						2: 0,
-						1: 0,
-						0: 0,
-					}
+					aD.ClassCount = [3]int{0, 0, 0}
 					aD.ClassCount[class] = 1
 					retval[normaddr] = aD
 				}
