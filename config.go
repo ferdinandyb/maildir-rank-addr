@@ -33,7 +33,9 @@ func loadConfig() Config {
 
 	err := viper.ReadInConfig()
 	if err != nil { // Handle errors reading the config file
-		panic(fmt.Errorf("fatal error config file: %w", err))
+		if _, ok := err.(viper.ConfigFileNotFoundError); !ok {
+			panic(fmt.Errorf("fatal error config file: %w", err))
+		}
 	}
 	if viper.Get("maildir") == "" {
 		pflag.PrintDefaults()
