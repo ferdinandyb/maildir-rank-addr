@@ -29,7 +29,6 @@ func getMostFrequent(names []string) string {
 
 func normalizeAddressNames(aD AddressData) AddressData {
 	aD.Name = getMostFrequent(aD.Names)
-	aD.Num = len(aD.Names)
 	return aD
 }
 
@@ -39,9 +38,9 @@ func calculateRanks(data map[string]AddressData) map[int]map[string]AddressData 
 		Value AddressData
 	}
 	classedData := map[int]map[string]AddressData{
-		2: map[string]AddressData{},
-		1: map[string]AddressData{},
-		0: map[string]AddressData{},
+		2: {},
+		1: {},
+		0: {},
 	}
 	for addr, value := range data {
 		classedData[value.Class][addr] = normalizeAddressNames(value)
@@ -54,7 +53,7 @@ func calculateRanks(data map[string]AddressData) map[int]map[string]AddressData 
 			s = append(s, KeyValue{k, v})
 		}
 		sort.SliceStable(s, func(i, j int) bool {
-			return s[i].Value.Num > s[j].Value.Num
+			return s[i].Value.ClassCount[class] > s[j].Value.ClassCount[class]
 		})
 		for rank, kv := range s {
 			thisval, _ := thisclass[kv.Key]
@@ -62,7 +61,7 @@ func calculateRanks(data map[string]AddressData) map[int]map[string]AddressData 
 			thisclass[kv.Key] = thisval
 		}
 		sort.SliceStable(s, func(i, j int) bool {
-			return s[i].Value.Date > s[j].Value.Date
+			return s[i].Value.ClassDate[class] > s[j].Value.ClassDate[class]
 		})
 		for rank, kv := range s {
 			thisval, _ := thisclass[kv.Key]

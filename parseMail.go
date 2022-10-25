@@ -93,6 +93,9 @@ func assignClass(
 	sender string,
 	addresses []string,
 ) int {
+	if len(addresses) == 0 {
+		return 2
+	}
 	if field == "from" {
 		return 0
 	}
@@ -138,7 +141,6 @@ func processHeaders(
 	addresses []string,
 ) {
 	count := 0
-	shouldAssignClass := len(addresses) > 0
 	retval := make(map[string]AddressData)
 	fields := [4]string{"to", "cc", "bcc", "from"}
 	for h := range headers {
@@ -164,36 +166,38 @@ func processHeaders(
 				if filterAddress(normaddr) {
 					continue
 				}
+				class := assignClass(
+					field,
+					sender,
+					addresses,
+				)
 				if aD, ok := retval[normaddr]; ok {
 					aD.Names = append(aD.Names, address.Name)
-					if shouldAssignClass {
-						aC := assignClass(
-							field,
-							sender,
-							addresses,
-						)
-						if aD.Class < aC {
-							aD.Class = aC
-						}
+					if aD.Class < class {
+						aD.Class = class
 					}
-					if aD.Date < time.Unix() {
-						aD.Date = time.Unix()
+					if aD.ClassDate[class] < time.Unix() {
+						aD.ClassDate[class] = time.Unix()
 					}
+					aD.ClassCount[class]++
 					retval[normaddr] = aD
 				} else {
 					aD := AddressData{}
-					aD.Names = append(aD.Names, address.Name)
-					aD.Date = time.Unix()
 					aD.Address = normaddr
-					if shouldAssignClass {
-						aD.Class = assignClass(
-							field,
-							sender,
-							addresses,
-						)
-					} else {
-						aD.Class = 2
+					aD.Class = class
+					aD.Names = append(aD.Names, address.Name)
+					aD.ClassDate = map[int]int64{
+						2: 0,
+						1: 0,
+						0: 0,
 					}
+					aD.ClassDate[class] = time.Unix()
+					aD.ClassCount = map[int]int{
+						2: 0,
+						1: 0,
+						0: 0,
+					}
+					aD.ClassCount[class] = 1
 					retval[normaddr] = aD
 				}
 			}

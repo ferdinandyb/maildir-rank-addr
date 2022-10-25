@@ -93,12 +93,12 @@ three classes:
 - 1: from address is yours, address found in Cc
 - 0: From fields and anything else
 
-The classes are then ranked separately, the higher the class, the higher it
-gets in the output file.
-
 The second step is ranking separately by frequency (how many times the address
 has been seen) and recency (ordered by Date). These ranks are then combined to
 form the final rank.
+
+The classes are then ranked separately, the higher the class, the higher it
+gets in the output file.
 
 ## Statistics
 
