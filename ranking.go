@@ -9,9 +9,9 @@ func getMostFrequent(names []string) string {
 	counter := make(map[string]int)
 	for _, name := range names {
 		if _, ok := counter[name]; ok {
-			counter[name] = 1
-		} else {
 			counter[name] = counter[name] + 1
+		} else {
+			counter[name] = 1
 		}
 	}
 	maxcount := 0
