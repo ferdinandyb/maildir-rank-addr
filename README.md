@@ -16,7 +16,7 @@ available extremely fast.
 - uses the most frequent display name for each email
 - filters common "no reply" addresses
 - normalizes emails to lower case
-- "blazingly fast"*: crunch time for 270k emails is 10s on my machine, grepping from the output is instantaneous
+- "blazingly fast"*: crunch time for 270k emails is 7s on my machine, grepping from the output is instantaneous
 
 *: compared to original python implementation for crunching (see Behind the scenes below) and compared to using notmuch query for address completion
 
