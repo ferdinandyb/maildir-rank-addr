@@ -89,7 +89,6 @@ func parseMessage(
 }
 
 func assignClass(
-	address *mail.Address,
 	field string,
 	sender string,
 	addresses []string,
@@ -111,14 +110,19 @@ func assignClass(
 	return 0
 }
 
-func filterAddress(address *mail.Address) bool {
+func filterAddress(address string) bool {
 	FILTERLIST := []string{
 		"do-not-reply",
+		"donotreply",
 		"no-reply",
 		"bounce",
 		"noreply",
+		"no.reply",
+		"no_reply",
+		"nevalaszolj",
+		"nincsvalasz",
 	}
-	firstpart := strings.Split(address.Address, "@")[0]
+	firstpart := strings.Split(address, "@")[0]
 	for _, filt := range FILTERLIST {
 		if strings.Contains(firstpart, filt) {
 			return true
@@ -143,7 +147,7 @@ func processHeaders(
 		senderaddress, err := h.AddressList("from")
 		var sender string
 		if len(senderaddress) > 0 {
-			sender = senderaddress[0].Address
+			sender = strings.ToLower(senderaddress[0].Address)
 		} else {
 			sender = ""
 		}
@@ -156,14 +160,14 @@ func processHeaders(
 				continue
 			}
 			for _, address := range header {
-				if filterAddress(address) {
+				normaddr := strings.ToLower(address.Address)
+				if filterAddress(normaddr) {
 					continue
 				}
-				if aD, ok := retval[address.Address]; ok {
+				if aD, ok := retval[normaddr]; ok {
 					aD.Names = append(aD.Names, address.Name)
 					if shouldAssignClass {
 						aC := assignClass(
-							address,
 							field,
 							sender,
 							addresses,
@@ -175,15 +179,14 @@ func processHeaders(
 					if aD.Date < time.Unix() {
 						aD.Date = time.Unix()
 					}
-					retval[address.Address] = aD
+					retval[normaddr] = aD
 				} else {
 					aD := AddressData{}
 					aD.Names = append(aD.Names, address.Name)
 					aD.Date = time.Unix()
-					aD.Address = address.Address
+					aD.Address = normaddr
 					if shouldAssignClass {
 						aD.Class = assignClass(
-							address,
 							field,
 							sender,
 							addresses,
@@ -191,7 +194,7 @@ func processHeaders(
 					} else {
 						aD.Class = 2
 					}
-					retval[address.Address] = aD
+					retval[normaddr] = aD
 				}
 
 			}
