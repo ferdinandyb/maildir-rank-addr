@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"mime"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -160,6 +161,12 @@ func processHeaders(
 				continue
 			}
 			for _, address := range header {
+
+				dec := new(mime.WordDecoder)
+				name, err := dec.DecodeHeader(address.Name)
+				if err != nil {
+					continue
+				}
 				normaddr := strings.ToLower(address.Address)
 				if filterAddress(normaddr) {
 					continue
@@ -170,7 +177,7 @@ func processHeaders(
 					addresses,
 				)
 				if aD, ok := retval[normaddr]; ok {
-					aD.Names = append(aD.Names, address.Name)
+					aD.Names = append(aD.Names, name)
 					if aD.Class < class {
 						aD.Class = class
 					}
@@ -183,7 +190,7 @@ func processHeaders(
 					aD := AddressData{}
 					aD.Address = normaddr
 					aD.Class = class
-					aD.Names = append(aD.Names, address.Name)
+					aD.Names = append(aD.Names, name)
 					aD.ClassDate = [3]int64{0, 0, 0}
 					aD.ClassDate[class] = time.Unix()
 					aD.ClassCount = [3]int{0, 0, 0}
