@@ -110,7 +110,7 @@ func assignClass(
 func filterAddress(address string) bool {
 	_, err := mail.ParseAddress(address)
 	if err != nil {
-		return false
+		return true
 	}
 	FILTERLIST := []string{
 		"do-not-reply",
