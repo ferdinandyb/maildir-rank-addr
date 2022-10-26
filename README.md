@@ -77,10 +77,13 @@ sends will not be possible!
 
 #### aerc
 
-Put something like this in your aerc config:
+Put something like this in your aerc config (using your favourite grep):
 ```
-address-book-cmd="ugrep -i --color=never %s $HOME/.cache/maildir-rank-addr/addressbook.tsv"
+address-book-cmd="ugrep -i --color=never %s /home/[myuser]/.cache/maildir-rank-addr/addressbook.tsv"
 ```
+
+Note that `address-book-cmd` is not executed in the shell, so you need to hard
+code the path without shell expansion.
 
 # Behind the scenes
 
