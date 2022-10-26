@@ -108,6 +108,10 @@ func assignClass(
 }
 
 func filterAddress(address string) bool {
+	_, err := mail.ParseAddress(address)
+	if err != nil {
+		return false
+	}
 	FILTERLIST := []string{
 		"do-not-reply",
 		"donotreply",
