@@ -6,6 +6,7 @@ import (
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 	"os"
+	"regexp"
 )
 
 func loadConfig() Config {
@@ -13,6 +14,7 @@ func loadConfig() Config {
 	pflag.String("outputpath", "", "path to output file")
 	pflag.String("template", "", "output template")
 	pflag.StringSlice("addresses", []string{}, "comma separated list of your email addresses")
+	pflag.StringSlice("filters", []string{}, "comma separated list of regexes to filter")
 	pflag.Parse()
 	viper.BindPFlags(pflag.CommandLine)
 	dir, direrr := os.UserConfigDir()
@@ -29,6 +31,7 @@ func loadConfig() Config {
 	}
 	viper.SetDefault("outputpath", dir+"/maildir-rank-addr/addressbook.tsv")
 	viper.SetDefault("addresses", []string{})
+	viper.SetDefault("filters", []string{})
 	viper.SetDefault("template", "{{.Address}}\t{{.Name}}")
 
 	err := viper.ReadInConfig()
@@ -43,11 +46,17 @@ func loadConfig() Config {
 	}
 	maildir, _ := homedir.Expand(viper.GetString("maildir"))
 	outputpath, _ := homedir.Expand(viper.GetString("outputpath"))
+	filterInput := viper.GetStringSlice("filters")
+	customFilters := make([]*regexp.Regexp, len(filterInput))
+	for i, filter := range filterInput {
+		customFilters[i] = regexp.MustCompile(filter)
+	}
 	config := Config{
-		maildir:    maildir,
-		outputpath: outputpath,
-		addresses:  viper.GetStringSlice("addresses"),
-		template:   viper.GetString("template"),
+		maildir:       maildir,
+		outputpath:    outputpath,
+		addresses:     viper.GetStringSlice("addresses"),
+		template:      viper.GetString("template"),
+		customFilters: customFilters,
 	}
 	return config
 }

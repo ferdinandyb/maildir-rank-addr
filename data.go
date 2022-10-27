@@ -1,5 +1,7 @@
 package main
 
+import "regexp"
+
 type AddressData struct {
 	Address       string
 	Names         []string
@@ -13,8 +15,9 @@ type AddressData struct {
 }
 
 type Config struct {
-	maildir    string
-	outputpath string
-	addresses  []string
-	template   string
+	maildir       string
+	outputpath    string
+	addresses     []string
+	template      string
+	customFilters []*regexp.Regexp
 }

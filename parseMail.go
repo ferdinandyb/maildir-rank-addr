@@ -107,7 +107,7 @@ func assignClass(
 	return 0
 }
 
-func filterAddress(address string) bool {
+func filterAddress(address string, customFilters []*regexp.Regexp) bool {
 	_, err := mail.ParseAddress(address)
 	if err != nil {
 		return true
@@ -129,6 +129,11 @@ func filterAddress(address string) bool {
 			return true
 		}
 	}
+	for _, filt := range customFilters {
+		if filt.MatchString(address) {
+			return true
+		}
+	}
 	return false
 }
 
@@ -136,6 +141,7 @@ func processHeaders(
 	headers <-chan *mail.Header,
 	retvalchan chan map[string]AddressData,
 	addresses []string,
+	customFilters []*regexp.Regexp,
 ) {
 	count := 0
 	retval := make(map[string]AddressData)
@@ -172,7 +178,7 @@ func processHeaders(
 					continue
 				}
 				normaddr := strings.ToLower(address.Address)
-				if filterAddress(normaddr) {
+				if filterAddress(normaddr, customFilters) {
 					continue
 				}
 				class := assignClass(
@@ -211,7 +217,7 @@ func processHeaders(
 	close(retvalchan)
 }
 
-func walkMaildir(path string, addresses []string) map[string]AddressData {
+func walkMaildir(path string, addresses []string, customFilters []*regexp.Regexp) map[string]AddressData {
 	headers := make(chan *mail.Header)
 	messagePaths := make(chan string, 4096)
 
@@ -226,7 +232,7 @@ func walkMaildir(path string, addresses []string) map[string]AddressData {
 	}
 
 	retvalchan := make(chan map[string]AddressData)
-	go processHeaders(headers, retvalchan, addresses)
+	go processHeaders(headers, retvalchan, addresses, customFilters)
 
 	filepath.Walk(path, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
