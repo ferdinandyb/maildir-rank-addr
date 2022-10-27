@@ -13,7 +13,7 @@ func loadConfig() Config {
 	pflag.String("maildir", "", "path to maildir folder")
 	pflag.String("outputpath", "", "path to output file")
 	pflag.String("template", "", "output template")
-	pflag.StringSlice("addresses", []string{}, "comma separated list of your email addresses")
+	pflag.StringSlice("addresses", []string{}, "comma separated list of your email addresses (regex possible)")
 	pflag.StringSlice("filters", []string{}, "comma separated list of regexes to filter")
 	pflag.Parse()
 	viper.BindPFlags(pflag.CommandLine)
@@ -51,10 +51,15 @@ func loadConfig() Config {
 	for i, filter := range filterInput {
 		customFilters[i] = regexp.MustCompile(filter)
 	}
+	addressesInput := viper.GetStringSlice("addresses")
+	addresses := make([]*regexp.Regexp, len(addressesInput))
+	for i, filter := range addressesInput {
+		addresses[i] = regexp.MustCompile(filter)
+	}
 	config := Config{
 		maildir:       maildir,
 		outputpath:    outputpath,
-		addresses:     viper.GetStringSlice("addresses"),
+		addresses:     addresses,
 		template:      viper.GetString("template"),
 		customFilters: customFilters,
 	}

@@ -17,7 +17,7 @@ type AddressData struct {
 type Config struct {
 	maildir       string
 	outputpath    string
-	addresses     []string
+	addresses     []*regexp.Regexp
 	template      string
 	customFilters []*regexp.Regexp
 }

@@ -85,7 +85,7 @@ func messageParser(
 func assignClass(
 	field string,
 	sender string,
-	addresses []string,
+	addresses []*regexp.Regexp,
 ) int {
 	if len(addresses) == 0 {
 		return 2
@@ -93,9 +93,8 @@ func assignClass(
 	if field == "from" {
 		return 0
 	}
-
 	for _, addr := range addresses {
-		if addr == sender {
+		if addr.MatchString(sender) {
 			switch field {
 			case "to", "bcc":
 				return 2
@@ -140,7 +139,7 @@ func filterAddress(address string, customFilters []*regexp.Regexp) bool {
 func processHeaders(
 	headers <-chan *mail.Header,
 	retvalchan chan map[string]AddressData,
-	addresses []string,
+	addresses []*regexp.Regexp,
 	customFilters []*regexp.Regexp,
 ) {
 	count := 0
@@ -217,7 +216,7 @@ func processHeaders(
 	close(retvalchan)
 }
 
-func walkMaildir(path string, addresses []string, customFilters []*regexp.Regexp) map[string]AddressData {
+func walkMaildir(path string, addresses []*regexp.Regexp, customFilters []*regexp.Regexp) map[string]AddressData {
 	headers := make(chan *mail.Header)
 	messagePaths := make(chan string, 4096)
 

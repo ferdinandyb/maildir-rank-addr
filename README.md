@@ -45,7 +45,7 @@ or systemd timer).
 Supported flags:
 
 ```
-      --addresses strings   comma separated list of your email addresses
+      --addresses strings   comma separated list of your email addresses (regex possible)
       --filters strings     comma separated list of regexes to filter
       --maildir string      path to maildir folder
       --outputpath string   path to output file
