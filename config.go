@@ -7,6 +7,8 @@ import (
 	"github.com/spf13/viper"
 	"os"
 	"regexp"
+	"strings"
+	"text/template"
 )
 
 func loadConfig() Config {
@@ -56,11 +58,20 @@ func loadConfig() Config {
 	for i, filter := range addressesInput {
 		addresses[i] = regexp.MustCompile(filter)
 	}
+	templateString := viper.GetString("template")
+
+	if !strings.HasSuffix(templateString, "\n") {
+		templateString += "\n"
+	}
+	tmpl, err := template.New("output").Parse(templateString)
+	if err != nil {
+		panic(fmt.Errorf("bad template"))
+	}
 	config := Config{
 		maildir:       maildir,
 		outputpath:    outputpath,
 		addresses:     addresses,
-		template:      viper.GetString("template"),
+		template:      tmpl,
 		customFilters: customFilters,
 	}
 	return config
