@@ -46,13 +46,65 @@ Supported flags:
 
 ```
       --addresses strings   comma separated list of your email addresses
+      --filters strings     comma separated list of regexes to filter
       --maildir string      path to maildir folder
       --outputpath string   path to output file
       --template string     output template
 ```
 
+**maildir**
+
+The path to the folder that will be scanned. No default is set for this.
+
+**outputpath**
+
 By default results are output to
 `$HOME/.cache/maildir-rank-addr/addressbook.tsv"`.
+
+**addresses**
+
+List of your own email addresses. If you do not provide your own addresses,
+classicifation based on your explicit sends will not be possible!
+
+**template**
+
+Uses go's `text/template` to configure output for each address (one line per address).
+Available keys:
+```
+	Address
+	Name
+	Names
+	Class
+	FrequencyRank
+	RecencyRank
+	TotalRank
+	ClassCount
+	ClassDate
+```
+
+Default: `{{.Address}}\t{{.Name}}`
+
+**filters**
+
+List of regexes. If an address is matched against a regex, it will be excluded
+from the output. The regex is matched against the entire email address.
+
+Note that we already filter out addresses, where the local part (the part
+before the @) matches any of these strings:
+
+```
+	"do-not-reply",
+	"donotreply",
+	"no-reply",
+	"bounce",
+	"noreply",
+	"no.reply",
+	"no_reply",
+	"nevalaszolj",
+	"nincsvalasz",
+```
+
+## config file
 
 Besides the flags, toml formatted configuration file is also possible. It's
 first looked for at `$HOME/.config/maildir-rank-addr/config` and then the
@@ -66,12 +118,11 @@ addresses = [
     "address1@example.com",
     "address2@otherexample.com"
 ]
+filters = ["@spam.(com|org)"]
 outputpath = "~/.mail/addressbook"
 template = "{{.Address}}\t{{.Name}}"
 ```
 
-If you do not provide your own addresses, classicifation based on your explicit
-sends will not be possible!
 
 ## Integration
 
