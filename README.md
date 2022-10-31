@@ -189,7 +189,7 @@ _seconds_.
 
 # Contribution
 
-Patches sent in email are also accepted :)
+Patches sent in email are also welcome :)
 
 # Similar Projects
 
