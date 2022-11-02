@@ -130,7 +130,7 @@ template = "{{.Address}}\t{{.Name}}"
 
 Put something like this in your aerc config (using your favourite grep):
 ```
-address-book-cmd="ugrep -i --color=never %s /home/[myuser]/.cache/maildir-rank-addr/addressbook.tsv"
+address-book-cmd="ugrep -i -m 100 --color=never %s /home/[myuser]/.cache/maildir-rank-addr/addressbook.tsv"
 ```
 
 Note that `address-book-cmd` is not executed in the shell, so you need to hard
