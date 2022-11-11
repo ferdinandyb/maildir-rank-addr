@@ -12,6 +12,7 @@ import (
 )
 
 func loadConfig() Config {
+	pflag.String("config", "", "path to config file")
 	pflag.String("maildir", "", "path to maildir folder")
 	pflag.String("outputpath", "", "path to output file")
 	pflag.String("template", "", "output template")
@@ -36,9 +37,14 @@ func loadConfig() Config {
 	viper.SetDefault("filters", []string{})
 	viper.SetDefault("template", "{{.Address}}\t{{.Name}}")
 
-	err := viper.ReadInConfig()
+	configPath, err := pflag.CommandLine.GetString("config")
+	if configPath != "" && err == nil {
+		viper.SetConfigFile(configPath)
+	}
+
+	err = viper.ReadInConfig()
 	if err != nil { // Handle errors reading the config file
-		if _, ok := err.(viper.ConfigFileNotFoundError); !ok {
+		if _, ok := err.(viper.ConfigFileNotFoundError); !ok || configPath != "" {
 			panic(fmt.Errorf("fatal error config file: %w", err))
 		}
 	}

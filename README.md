@@ -46,6 +46,7 @@ Supported flags:
 
 ```
       --addresses strings   comma separated list of your email addresses (regex possible)
+      --config string       path to config file
       --filters strings     comma separated list of regexes to filter
       --maildir string      path to maildir folder
       --outputpath string   path to output file
@@ -103,6 +104,10 @@ before the @) matches any of these strings:
 	"nevalaszolj",
 	"nincsvalasz",
 ```
+
+**config**
+
+Path to a config file to be loaded instead of the defaults (see below).
 
 ## config file
 
