@@ -10,12 +10,12 @@ func getMostFrequent(names []string) string {
 	for _, name := range names {
 		if _, ok := counter[name]; ok {
 			counter[name] = counter[name] + 1
-		} else {
+		} else if strings.TrimSpace(name) != "" {
 			counter[name] = 1
 		}
 	}
 	maxcount := 0
-	lastname := names[0]
+	lastname := ""
 	for name, counter := range counter {
 		if counter > maxcount {
 			lastname = name

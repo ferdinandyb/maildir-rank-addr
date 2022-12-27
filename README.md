@@ -13,7 +13,7 @@ available extremely fast.
 - collects from To, Cc, Bcc and From fields
 - ranks addresses explicitly emailed by you higher
 - configurable output via go templates
-- uses the most frequent display name for each email
+- uses the most frequent non-empty display name for each email
 - filters common "no reply" addresses
 - normalizes emails to lower case
 - "blazingly fast"*: crunch time for 270k emails is 7s on my machine, grepping from the output is instantaneous
