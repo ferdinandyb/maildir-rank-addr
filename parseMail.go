@@ -140,7 +140,9 @@ func processHeaders(
 					addresses,
 				)
 				if aD, ok := retval[normaddr]; ok {
-					aD.Names = append(aD.Names, name)
+					if normaddr != strings.ToLower(name) {
+						aD.Names = append(aD.Names, name)
+					}
 					if aD.Class < class {
 						aD.Class = class
 					}
@@ -153,7 +155,9 @@ func processHeaders(
 					aD := AddressData{}
 					aD.Address = normaddr
 					aD.Class = class
-					aD.Names = append(aD.Names, name)
+					if normaddr != strings.ToLower(name) {
+						aD.Names = append(aD.Names, name)
+					}
 					aD.ClassDate = [3]int64{0, 0, 0}
 					aD.ClassDate[class] = time.Unix()
 					aD.ClassCount = [3]int{0, 0, 0}
