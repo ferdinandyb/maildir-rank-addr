@@ -212,8 +212,9 @@ Please see [contribution guidelines](https://github.com/ferdinandyb/maildir-rank
 
 # Similar Projects
 
-- [maildir2addr](https://github.com/BourgeoisBear/maildir2addr)
-- [notmuch-addrlookup-c](https://github.com/aperezdc/notmuch-addrlookup-c)
+- [maildir2addr](https://github.com/BourgeoisBear/maildir2addr): somewhat similar address book generator
+- [notmuch-addrlookup-c](https://github.com/aperezdc/notmuch-addrlookup-c): address lookup from notmuch
+- [addr-book-combine](https://jasoncarloscox.com/creations/addr-book-combine/): for combining generated addressbooks with hand currated ones, like [khard](https://github.com/lucc/khard)
 
 
 # Acknowledgments
