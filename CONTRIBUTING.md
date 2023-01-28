@@ -49,3 +49,7 @@ Please follow these general rules (adopted somewhat from the aerc contribution g
 
 There is a great reference for commit messages in the
 [Linux kernel documentation](https://www.kernel.org/doc/html/latest/process/submitting-patches.html#describe-your-changes) and on [tpope's blog](https://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html).
+
+## Formatting
+
+Format the code with [gofumpt](https://github.com/mvdan/gofumpt).
