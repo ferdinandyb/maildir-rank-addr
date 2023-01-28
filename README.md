@@ -14,15 +14,11 @@ available extremely fast.
 - ranks addresses explicitly emailed by you higher
 - configurable output via go templates
 - uses the most frequent non-empty display name for each email
-- filters common "no reply" addresses
+- filters common "no reply" addresses, additional filters can be added via regexes
 - normalizes emails to lower case
-- "blazingly fast"*: crunch time for 270k emails is 7s on my machine, grepping from the output is instantaneous
+- "blazingly fast"<sup>*</sup>: crunch time for 270k emails is 7s on my machine, grepping from the output is instantaneous
 
-*: compared to original python implementation for crunching (see Behind the scenes below) and compared to using notmuch query for address completion
-
-### Planned features:
-
-- configurable filtering based on regex
+<sup>*</sup>: compared to original python implementation for crunching (see Behind the scenes below) and compared to using notmuch query for address completion
 
 # Installation
 
