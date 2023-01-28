@@ -65,7 +65,7 @@ By default results are output to
 **addresses**
 
 List of your own email addresses. If you do not provide your own addresses,
-classicifation based on your explicit sends will not be possible!
+classification based on your explicit sends will not be possible!
 
 **template**
 
@@ -152,25 +152,37 @@ Ranking is actually done by first classifying and then ranking within class.
 
 ### Classifying addresses
 
-First we go through each email found in your maildir and for each address found in any of the address headers we assign a class, based on whether the sender is you or not and which type of header the address was found in:
+First we go through each email found in your maildir and for each address found
+in any of the address headers we assign a class, based on whether the sender is
+you or not and which type of header the address was found in:
 
 - 2: from address is yours, address found in To, or Bcc,
 - 1: from address is yours, address found in Cc,
 - 0: From fields and anything else.
 
-For each _unique_ address seen, we record a class dates (the date of the latest email in which that address was assigned class X) and class counts (the number of times in which that address was assigned class X). The unique address itself also get assigned a class, which is the highest class it was seen in.
+For each _unique_ address seen, we record a class dates (the date of the latest
+email in which that address was assigned class X) and class counts (the number
+of times in which that address was assigned class X). The unique address itself
+also get assigned a class, which is the highest class it was seen in.
 
 #### Example
 
-Bob writes Alice 3 letters and Alice answers one of them. When Alice runs the software both email addresses will recieve 3 counts to class 0 and have the class date for 0 at the latest email. Alice now answers one of Bob's emails and Cc-s Eve. Alice's address receives another count for class 0 and the date is also updated. Eve's address receive a count for class 1 and Bob's email receives a count for class 2 with the class 2 date being set to this latest email. This put's Bob's email address as class 2 as that is the highest class it has, Eve's at class 1 and Alice's own address in class 0.
+Bob writes Alice 3 letters and Alice answers one of them. When Alice runs the
+software both email addresses will receive 3 counts to class 0 and have the
+class date for 0 at the latest email. Alice now answers one of Bob's emails and
+Cc-s Eve. Alice's address receives another count for class 0 and the date is
+also updated. Eve's address receive a count for class 1 and Bob's email
+receives a count for class 2 with the class 2 date being set to this latest
+email. This puts Bob's email address as class 2 as that is the highest class
+it has, Eve's at class 1 and Alice's own address in class 0.
 
 ### Ranking
 
-The addresses are then ranked by their highest class based on only the highest's class's count and date. The output will be structured so class 2 emails are on the top, then class 1 email and class 0 emails are at the bottom. This solves to things, first all mailinglists and marketing which you get, but only read will be available to send to, but guaranteed to be at the very bottom of search results. Second, even if you accindentally replied to a newsletter email which you get daily, it's class count will be just 1, so even though it's a bit higher up now due to the reply, it will still feature at the bottom of it's class and not get conflated by having received hundreds of email from the address pretty recently.
+The addresses are then ranked by their highest class based on only the highest class's count and date. The output will be structured so class 2 emails are on the top, then class 1 email and class 0 emails are at the bottom. This solves two things: firstly, all mailing-lists and marketing which you get but only read will be available to send to, but are guaranteed to be at the very bottom of search results. Secondly, even if you accidentally replied to a newsletter email which you get daily, it's class count will be just 1, so even though it's a bit higher up now due to the reply, it will still feature at the bottom of it's class and not get conflated by having received hundreds of email from the address pretty recently.
 
 **Frequency rank:** The emails are ordered according to the class count and their frequency rank becomes their place in this ordered list, with the highest count receiving a rank of 0. In case of equal counts the order is the alphabetical order of the email addresses.
 
-**Recency rank:** Similary, the emails are ordered again, now based on their class date, where the most recent email receives the rank of 0. In case of equal dates the order is the alphabetical order of the email addresses.
+**Recency rank:** Similar, the emails are ordered again, now based on their class date, where the most recent email receives the rank of 0. In case of equal dates the order is the alphabetical order of the email addresses.
 
 **Total rank = Frequency rank + Recency Rank**
 
