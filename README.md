@@ -196,7 +196,7 @@ _seconds_.
 
 # Contribution
 
-Patches sent in email are also welcome :)
+Please see [contribution guidelines](https://github.com/ferdinandyb/maildir-rank-addr/blob/master/CONTRIBUTING.md).
 
 # Similar Projects
 
