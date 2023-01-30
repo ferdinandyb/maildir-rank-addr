@@ -8,6 +8,7 @@ Why? No need to manually edit an address book, yet the cached ranking is
 available extremely fast.
 
 ### Features:
+
 - scans all your emails
 - ranks based on both recency and frequency of addresses
 - collects from To, Cc, Bcc and From fields
@@ -16,13 +17,15 @@ available extremely fast.
 - uses the most frequent non-empty display name for each email
 - filters common "no reply" addresses, additional filters can be added via regexes
 - normalizes emails to lower case
-- "blazingly fast"<sup>*</sup>: crunch time for 270k emails is 7s on my machine, grepping from the output is instantaneous
+- ability to add additional email addresses from a command
+- "blazingly fast"<sup>\*</sup>: crunch time for 270k emails is 7s on my machine, grepping from the output is instantaneous
 
-<sup>*</sup>: compared to original python implementation for crunching (see Behind the scenes below) and compared to using notmuch query for address completion
+<sup>\*</sup>: compared to original python implementation for crunching (see Behind the scenes below) and compared to using notmuch query for address completion
 
 # Installation
 
 The easiest way to install is running:
+
 ```
 go install github.com/ferdinandyb/maildir-rank-addr@latest
 ```
@@ -41,6 +44,8 @@ or systemd timer).
 Supported flags:
 
 ```
+      --addr-book-cmd string   optional command to query addresses from your addressbook
+      --addr-book-add-unmatched if cmd is stated, determine wether to add unmatched addresses at the end of the file (true or false)
       --addresses strings   comma separated list of your email addresses (regex possible)
       --config string       path to config file
       --filters strings     comma separated list of regexes to filter
@@ -67,6 +72,7 @@ classification based on your explicit sends will not be possible!
 
 Uses go's `text/template` to configure output for each address (one line per address).
 Available keys:
+
 ```
 	Address
 	Name
@@ -101,6 +107,18 @@ before the @) matches any of these strings:
 	"nincsvalasz",
 ```
 
+**addr-book-cmd**
+
+Optional command to fetch email addresses and names, the output it returns must have
+an email address first, followed by a tab space and and the desired name, the name
+must end in a tab space or a newline for the command to work, this can be
+useful for integrating with command line addressbooks such as abook or khard
+
+```
+abook --mutt-query "s"
+khard email -p --remove-first-line
+```
+
 **config**
 
 Path to a config file to be loaded instead of the defaults (see below).
@@ -124,12 +142,12 @@ outputpath = "~/.mail/addressbook"
 template = "{{.Address}}\t{{.Name}}"
 ```
 
-
 ## Integration
 
 #### aerc
 
 Put something like this in your aerc config (using your favourite grep):
+
 ```
 address-book-cmd="ugrep -jP -m 100 --color=never %s /home/[myuser]/.cache/maildir-rank-addr/addressbook.tsv"
 ```
@@ -144,7 +162,6 @@ code the path without shell expansion.
 ## Ranking
 
 Ranking is actually done by first classifying and then ranking within class.
-
 
 ### Classifying addresses
 
@@ -211,7 +228,6 @@ Please see [contribution guidelines](https://github.com/ferdinandyb/maildir-rank
 - [maildir2addr](https://github.com/BourgeoisBear/maildir2addr): somewhat similar address book generator
 - [notmuch-addrlookup-c](https://github.com/aperezdc/notmuch-addrlookup-c): address lookup from notmuch
 - [addr-book-combine](https://jasoncarloscox.com/creations/addr-book-combine/): for combining generated addressbooks with hand currated ones, like [khard](https://github.com/lucc/khard)
-
 
 # Acknowledgments
 

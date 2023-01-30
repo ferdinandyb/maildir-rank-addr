@@ -2,13 +2,15 @@ package main
 
 import (
 	"fmt"
-	homedir "github.com/mitchellh/go-homedir"
-	"github.com/spf13/pflag"
-	"github.com/spf13/viper"
 	"os"
+	"os/exec"
 	"regexp"
 	"strings"
 	"text/template"
+
+	homedir "github.com/mitchellh/go-homedir"
+	"github.com/spf13/pflag"
+	"github.com/spf13/viper"
 )
 
 func loadConfig() Config {
@@ -16,6 +18,8 @@ func loadConfig() Config {
 	pflag.String("maildir", "", "path to maildir folder")
 	pflag.String("outputpath", "", "path to output file")
 	pflag.String("template", "", "output template")
+	pflag.String("addr-book-cmd", "", "optional command to query addresses from your addressbook")
+	pflag.Bool("addr-book-add-unmatched", false, "flag to determine if you want unmatched addressbook contacts to be added to the output")
 	pflag.StringSlice("addresses", []string{}, "comma separated list of your email addresses (regex possible)")
 	pflag.StringSlice("filters", []string{}, "comma separated list of regexes to filter")
 	pflag.Parse()
@@ -65,6 +69,14 @@ func loadConfig() Config {
 		addresses[i] = regexp.MustCompile(filter)
 	}
 	templateString := viper.GetString("template")
+	addressbookLookupCommandString := viper.GetString("addr-book-cmd")
+	addressbookAddUnmatched := viper.GetBool("addr-book-add-unmatched")
+	var addressbookLookupCommand *exec.Cmd
+	if addressbookLookupCommandString != "" {
+		args := strings.Fields(addressbookLookupCommandString)
+		application, arguments := args[0], args[1:]
+		addressbookLookupCommand = exec.Command(application, arguments...)
+	}
 
 	if !strings.HasSuffix(templateString, "\n") {
 		templateString += "\n"
@@ -74,11 +86,13 @@ func loadConfig() Config {
 		panic(fmt.Errorf("bad template"))
 	}
 	config := Config{
-		maildir:       maildir,
-		outputpath:    outputpath,
-		addresses:     addresses,
-		template:      tmpl,
-		customFilters: customFilters,
+		maildir:                  maildir,
+		outputpath:               outputpath,
+		addresses:                addresses,
+		template:                 tmpl,
+		customFilters:            customFilters,
+		addressbookLookupCommand: addressbookLookupCommand,
+		addressbookAddUnmatched:  addressbookAddUnmatched,
 	}
 	return config
 }
