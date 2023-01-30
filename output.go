@@ -13,10 +13,11 @@ func saveData(
 	classedData map[int]map[string]AddressData,
 	path string,
 	tmpl *template.Template,
+	addressbook map[string]string,
+	addUnmatched bool,
 ) {
 	os.MkdirAll(filepath.Dir(path), os.ModePerm)
 	f, err := os.Create(path)
-
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -44,6 +45,15 @@ func saveData(
 		for _, kv := range s {
 			count++
 			tmpl.Execute(f, kv.Value)
+		}
+	}
+	if addUnmatched {
+		for ak, av := range addressbook {
+			aD := AddressData{}
+			aD.Address = ak
+			aD.Name = av
+			count++
+			tmpl.Execute(f, aD)
 		}
 	}
 	fmt.Println(count, " addresses written to ", path)

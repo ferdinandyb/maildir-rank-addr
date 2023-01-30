@@ -95,6 +95,7 @@ func processHeaders(
 	retvalchan chan map[string]AddressData,
 	addresses []*regexp.Regexp,
 	customFilters []*regexp.Regexp,
+	addressbook map[string]string,
 ) {
 	count := 0
 	retval := make(map[string]AddressData)
@@ -124,12 +125,6 @@ func processHeaders(
 				continue
 			}
 			for _, address := range header {
-
-				dec := new(mime.WordDecoder)
-				name, err := dec.DecodeHeader(address.Name)
-				if err != nil {
-					continue
-				}
 				normaddr := strings.ToLower(address.Address)
 				if filterAddress(normaddr, customFilters) {
 					continue
@@ -140,8 +135,15 @@ func processHeaders(
 					addresses,
 				)
 				if aD, ok := retval[normaddr]; ok {
-					if normaddr != strings.ToLower(name) {
-						aD.Names = append(aD.Names, name)
+					if aD.Name == "" {
+						dec := new(mime.WordDecoder)
+						name, err := dec.DecodeHeader(address.Name)
+						if err != nil {
+							continue
+						}
+						if (strings.ToLower(name) != normaddr) && (strings.ToLower(name) != "") {
+							aD.Names = append(aD.Names, name)
+						}
 					}
 					if aD.Class < class {
 						aD.Class = class
@@ -153,11 +155,22 @@ func processHeaders(
 					retval[normaddr] = aD
 				} else {
 					aD := AddressData{}
+					addressbookname := addressbook[normaddr]
+					if addressbookname == "" {
+						dec := new(mime.WordDecoder)
+						name, err := dec.DecodeHeader(address.Name)
+						if err != nil {
+							continue
+						}
+						if (strings.ToLower(name) != normaddr) && (strings.ToLower(name) != "") {
+							aD.Names = append(aD.Names, name)
+						}
+					} else {
+						aD.Name = addressbookname
+						delete(addressbook, normaddr)
+					}
 					aD.Address = normaddr
 					aD.Class = class
-					if normaddr != strings.ToLower(name) {
-						aD.Names = append(aD.Names, name)
-					}
 					aD.ClassDate = [3]int64{0, 0, 0}
 					aD.ClassDate[class] = time.Unix()
 					aD.ClassCount = [3]int{0, 0, 0}
@@ -174,7 +187,7 @@ func processHeaders(
 	close(retvalchan)
 }
 
-func walkMaildir(path string, addresses []*regexp.Regexp, customFilters []*regexp.Regexp) map[string]AddressData {
+func walkMaildir(path string, addresses []*regexp.Regexp, customFilters []*regexp.Regexp, addressbook map[string]string) map[string]AddressData {
 	headers := make(chan *mail.Header)
 	messagePaths := make(chan string, 4096)
 
@@ -189,7 +202,7 @@ func walkMaildir(path string, addresses []*regexp.Regexp, customFilters []*regex
 	}
 
 	retvalchan := make(chan map[string]AddressData)
-	go processHeaders(headers, retvalchan, addresses, customFilters)
+	go processHeaders(headers, retvalchan, addresses, customFilters, addressbook)
 
 	filepath.Walk(path, func(path string, info os.FileInfo, err error) error {
 		if err != nil {

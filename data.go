@@ -1,6 +1,7 @@
 package main
 
 import (
+	"os/exec"
 	"regexp"
 	"text/template"
 )
@@ -18,9 +19,11 @@ type AddressData struct {
 }
 
 type Config struct {
-	maildir       string
-	outputpath    string
-	addresses     []*regexp.Regexp
-	template      *template.Template
-	customFilters []*regexp.Regexp
+	maildir                  string
+	outputpath               string
+	addresses                []*regexp.Regexp
+	template                 *template.Template
+	customFilters            []*regexp.Regexp
+	addressbookLookupCommand *exec.Cmd
+	addressbookAddUnmatched  bool
 }

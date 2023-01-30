@@ -1,10 +1,9 @@
 package main
 
-import ()
-
 func main() {
 	config := loadConfig()
-	data := walkMaildir(config.maildir, config.addresses, config.customFilters)
+	addressbook := parseAddressbook(config.addressbookLookupCommand)
+	data := walkMaildir(config.maildir, config.addresses, config.customFilters, addressbook)
 	classeddata := calculateRanks(data)
-	saveData(classeddata, config.outputpath, config.template)
+	saveData(classeddata, config.outputpath, config.template, addressbook, config.addressbookAddUnmatched)
 }

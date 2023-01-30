@@ -32,6 +32,9 @@ func getMostFrequent(names []string) string {
 }
 
 func normalizeAddressNames(aD AddressData) AddressData {
+	if aD.Name != "" {
+		return aD
+	}
 	aD.Name = getMostFrequent(aD.Names)
 	return aD
 }
