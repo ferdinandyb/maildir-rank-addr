@@ -33,13 +33,13 @@ plt.plot(datetimes, addressnum, label = "# addresses")
 plt.plot(datetimes, [i+1 for i in range(len(datetimes))], label = "# emails")
 plt.legend()
 fig.autofmt_xdate()
-plt.savefig("date-address.png")
+plt.savefig("date-address.svg")
 
 
 fig = plt.figure()
 plt.plot([i+1 for i in range(len(addressnum))], addressnum)
 plt.xlabel("# emails")
 plt.ylabel("# addresses")
-plt.savefig("email-address.png")
+plt.savefig("email-address.svg")
 
 

@@ -211,8 +211,8 @@ also makes sense encoding rankings by simply ordering the addresses.
 
 You can generate these images for yourself using the python script `stats/generateEmailStatistics.py`.
 
-![Number of emails and address over time](stats/date-address.png)
-![Ratio of address to email](stats/email-address.png)
+![Number of emails and address over time](stats/date-address.svg)
+![Ratio of address to email](stats/email-address.svg)
 
 The `stats` folder also includes the original PoC implementation of this in
 python (`stats/generateAddressbookMaildir.py`) which takes a whopping 36
