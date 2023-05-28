@@ -3,6 +3,10 @@ package main
 import (
 	"sort"
 	"strings"
+	"unicode"
+
+	"golang.org/x/text/transform"
+	"golang.org/x/text/unicode/norm"
 )
 
 func getMostFrequent(names []string) string {
@@ -31,11 +35,18 @@ func getMostFrequent(names []string) string {
 	return lastname
 }
 
+func isMn(r rune) bool {
+	return unicode.Is(unicode.Mn, r) // Mn: nonspacing marks
+}
+
 func normalizeAddressNames(aD AddressData) AddressData {
 	if aD.Name != "" {
 		return aD
 	}
 	aD.Name = getMostFrequent(aD.Names)
+	t := transform.Chain(norm.NFD, transform.RemoveFunc(isMn), norm.NFC)
+	normStr, _, _ := transform.String(t, aD.Name)
+	aD.NormalizedName = normStr
 	return aD
 }
 

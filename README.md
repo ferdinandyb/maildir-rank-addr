@@ -15,6 +15,7 @@ available extremely fast.
 - ranks addresses explicitly emailed by you higher
 - configurable output via go templates
 - uses the most frequent non-empty display name for each email
+- display name can be unicode normalized for search purposes
 - filters common "no reply" addresses, additional filters can be added via regexes
 - normalizes emails to lower case
 - ability to add additional email addresses from a command
@@ -76,6 +77,7 @@ Available keys:
 ```
 	Address
 	Name
+	NormalizedName: same as Name, but unicode normalized
 	Names
 	Class
 	FrequencyRank
@@ -139,7 +141,7 @@ addresses = [
 ]
 filters = ["@spam.(com|org)"]
 outputpath = "~/.mail/addressbook"
-template = "{{.Address}}\t{{.Name}}"
+template = "{{.Address}}\t{{.Name}}\t{{.NormalizedName}}"
 ```
 
 ## Integration
@@ -152,10 +154,17 @@ Put something like this in your aerc config (using your favourite grep):
 address-book-cmd="ugrep -jP -m 100 --color=never %s /home/[myuser]/.cache/maildir-rank-addr/addressbook.tsv"
 ```
 
-(`-j` is smart case insensitive, and needs to be combined with `-P` for UTF-8)
+(`-j` is smart case insensitive, and needs to be combined with `-P` for UTF-8).
+
+Since aerc only uses the first two of the tab separated columns any other
+column can be added to help with search or to combine with external tools. For
+example adding `NormalizedName` as the third column will allow you to type
+"arpad", and still find and use the entry for "Árpád X" who uses accents in his
+name properly, and "Arpad Y" who conformed to ASCII for some reason.
 
 Note that `address-book-cmd` is not executed in the shell, so you need to hard
 code the path without shell expansion.
+
 
 # Behind the scenes
 

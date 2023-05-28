@@ -7,15 +7,16 @@ import (
 )
 
 type AddressData struct {
-	Address       string
-	Names         []string
-	Class         int
-	FrequencyRank int
-	RecencyRank   int
-	TotalRank     int
-	ClassCount    [3]int
-	ClassDate     [3]int64
-	Name          string
+	Address        string
+	Names          []string
+	Class          int
+	FrequencyRank  int
+	RecencyRank    int
+	TotalRank      int
+	ClassCount     [3]int
+	ClassDate      [3]int64
+	Name           string
+	NormalizedName string
 }
 
 type Config struct {
