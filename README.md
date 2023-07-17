@@ -146,7 +146,7 @@ template = "{{.Address}}\t{{.Name}}\t{{.NormalizedName}}"
 
 ## Integration
 
-#### aerc
+### aerc
 
 Put something like this in your aerc config (using your favourite grep):
 
@@ -165,6 +165,54 @@ name properly, and "Arpad Y" who conformed to ASCII for some reason.
 Note that `address-book-cmd` is not executed in the shell, so you need to hard
 code the path without shell expansion.
 
+If you are using aerc with `[compose].edit-headers=true` you need integrate
+with your editor (e.g. with vim), instead of the above.
+
+### vim
+
+This is an example using `fzf` and the `fzf.vim` plugin. Add it to for example
+`~/.vim/after/ftplugin/mail.vim` to load it only for eml files. The example has
+been optimized for `aerc` with `[compose].edit-headers=true`. To insert
+addresses in the `To:` field, take your cursor to the line containing `To:` and
+press `<leader>a`. Use tab to select multiple addresses in the pop-up.
+
+```vimscript
+function! InsertAddressAerc()
+    call fzf#run(fzf#wrap("insertaddress", {
+    \ 'source':'cat ~/.cache/maildir-rank-addr/addressbook.tsv',
+    \ 'sink*': function("InsertContactsLine"),
+    \ 'options': '--no-sort -i --multi'
+    \}))
+endfunction
+
+function! InsertAddress()
+    call fzf#run(fzf#wrap("insertaddress", {
+    \ 'source':'cat ~/.cache/maildir-rank-addr/addressbook.tsv',
+    \ 'sink': function("InsertContact"),
+    \ 'options': '--no-sort -i'
+    \}))
+endfunction
+
+function! InsertContactsLine(names) abort
+    for name in a:names
+        call InsertContactLine(name)
+    endfor
+endfunction
+
+function! InsertContactLine(name) abort
+    let [address, name; rest] = split(a:name,"\t")
+    call append(line('.'), '    ' . name . " <" . address . ">,")
+endfunction
+
+function! InsertContact(name) abort
+    let [address, name; rest] = split(a:name,"\t")
+    exec 'normal! a'  . name . " <" . address . ">\<Esc>"
+endfunction
+
+nnoremap <leader>a :call InsertAddressAerc()<CR>
+nnoremap <leader>A :call InsertAddress()<CR>
+
+```
 
 # Behind the scenes
 
