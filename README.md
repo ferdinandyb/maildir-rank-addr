@@ -1,7 +1,7 @@
 # Description
 
 Generates a ranked addressbook from a maildir folder. It can be used in MUA's
-like [aerc](aerc-mail.org) or [mutt](http://www.mutt.org/) by grepping the
+like [aerc](http://aerc-mail.org) or [mutt](http://www.mutt.org/) by grepping the
 list.
 
 Why? No need to manually edit an address book, yet the cached ranking is
@@ -305,4 +305,4 @@ Please see [contribution guidelines](https://github.com/ferdinandyb/maildir-rank
 
 # Acknowledgments
 
-Some functions for parsing email was taken from [aerc](aerc-mail.org).
+Some functions for parsing email was taken from [aerc](http://aerc-mail.org).
