@@ -228,3 +228,36 @@ func walkMaildir(path string, addresses []*regexp.Regexp, customFilters []*regex
 
 	return <-retvalchan
 }
+
+func walkMaildirs(paths []string, addresses []*regexp.Regexp, customFilters []*regexp.Regexp, addressbook map[string]string) map[string]AddressData {
+	data := make(map[string]AddressData)
+	for _, maildir := range paths {
+		dataNew := walkMaildir(maildir, addresses, customFilters, addressbook)
+		if len(data) == 0 {
+			data = dataNew
+			continue
+		}
+		// Merge dataNew into data
+		for str, addr := range dataNew {
+			orig, ok := data[str]
+			if !ok {
+				data[str] = addr
+			} else {
+				orig.Names = append(orig.Names, addr.Names...)
+				if addr.Class > orig.Class {
+					orig.Class = addr.Class
+				}
+				for i := range orig.ClassCount {
+					orig.ClassCount[i] += addr.ClassCount[i]
+				}
+				for i := range orig.ClassDate {
+					if addr.ClassDate[i] > orig.ClassDate[i] {
+						orig.ClassDate[i] = addr.ClassDate[i]
+					}
+				}
+				data[str] = orig
+			}
+		}
+	}
+	return data
+}

@@ -15,7 +15,7 @@ import (
 
 func loadConfig() Config {
 	pflag.String("config", "", "path to config file")
-	pflag.String("maildir", "", "path to maildir folder")
+	pflag.StringSlice("maildir", []string{}, "comma separated list of paths to maildir folders")
 	pflag.String("outputpath", "", "path to output file")
 	pflag.String("template", "", "output template")
 	pflag.String("addr-book-cmd", "", "optional command to query addresses from your addressbook")
@@ -52,11 +52,15 @@ func loadConfig() Config {
 			panic(fmt.Errorf("fatal error config file: %w", err))
 		}
 	}
-	if viper.Get("maildir") == "" {
+	if len(viper.GetStringSlice("maildir")) == 0 {
 		pflag.PrintDefaults()
 		os.Exit(1)
 	}
-	maildir, _ := homedir.Expand(viper.GetString("maildir"))
+	maildirInput := viper.GetStringSlice("maildir")
+	maildirs := make([]string, len(maildirInput))
+	for i, maildir := range maildirInput {
+		maildirs[i], _ = homedir.Expand(maildir)
+	}
 	outputpath, _ := homedir.Expand(viper.GetString("outputpath"))
 	filterInput := viper.GetStringSlice("filters")
 	customFilters := make([]*regexp.Regexp, len(filterInput))
@@ -86,7 +90,7 @@ func loadConfig() Config {
 		panic(fmt.Errorf("bad template"))
 	}
 	config := Config{
-		maildir:                  maildir,
+		maildirs:                 maildirs,
 		outputpath:               outputpath,
 		addresses:                addresses,
 		template:                 tmpl,

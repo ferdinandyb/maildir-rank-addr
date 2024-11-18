@@ -50,14 +50,14 @@ Supported flags:
       --addresses strings   comma separated list of your email addresses (regex possible)
       --config string       path to config file
       --filters strings     comma separated list of regexes to filter
-      --maildir string      path to maildir folder
+      --maildir strings     comma separated list of paths to maildir folders
       --outputpath string   path to output file
       --template string     output template
 ```
 
 **maildir**
 
-The path to the folder that will be scanned. No default is set for this.
+The paths to the folders that will be scanned. No default is set for this.
 
 **outputpath**
 
