@@ -20,7 +20,7 @@ type AddressData struct {
 }
 
 type Config struct {
-	maildir                  string
+	maildirs                 []string
 	outputpath               string
 	addresses                []*regexp.Regexp
 	template                 *template.Template
