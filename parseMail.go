@@ -100,14 +100,14 @@ func processHeaders(
 	count := 0
 	retval := make(map[string]AddressData)
 	fields := [4]string{"to", "cc", "bcc", "from"}
-	for h := range headers {
+	for header := range headers {
 		count++
-		time, err := h.Date()
+		time, err := header.Date()
 		if err != nil {
 			continue
 		}
 
-		senderaddress, err := h.AddressList("from")
+		senderaddress, err := header.AddressList("from")
 		var sender string
 
 		if len(senderaddress) > 0 {
@@ -120,7 +120,7 @@ func processHeaders(
 		}
 
 		for _, field := range fields {
-			header, err := h.AddressList(field)
+			header, err := header.AddressList(field)
 			if err != nil {
 				continue
 			}
@@ -134,27 +134,27 @@ func processHeaders(
 					sender,
 					addresses,
 				)
-				if aD, ok := retval[normaddr]; ok {
-					if aD.Name == "" {
+				if addressdata, ok := retval[normaddr]; ok {
+					if addressdata.Name == "" {
 						dec := new(mime.WordDecoder)
 						name, err := dec.DecodeHeader(address.Name)
 						if err != nil {
 							continue
 						}
 						if (strings.ToLower(name) != normaddr) && (strings.ToLower(name) != "") {
-							aD.Names = append(aD.Names, name)
+							addressdata.Names = append(addressdata.Names, name)
 						}
 					}
-					if aD.Class < class {
-						aD.Class = class
+					if addressdata.Class < class {
+						addressdata.Class = class
 					}
-					if aD.ClassDate[class] < time.Unix() {
-						aD.ClassDate[class] = time.Unix()
+					if addressdata.ClassDate[class] < time.Unix() {
+						addressdata.ClassDate[class] = time.Unix()
 					}
-					aD.ClassCount[class]++
-					retval[normaddr] = aD
+					addressdata.ClassCount[class]++
+					retval[normaddr] = addressdata
 				} else {
-					aD := AddressData{}
+					addressdata := AddressData{}
 					addressbookname := addressbook[normaddr]
 					if addressbookname == "" {
 						dec := new(mime.WordDecoder)
@@ -163,19 +163,19 @@ func processHeaders(
 							continue
 						}
 						if (strings.ToLower(name) != normaddr) && (strings.ToLower(name) != "") {
-							aD.Names = append(aD.Names, name)
+							addressdata.Names = append(addressdata.Names, name)
 						}
 					} else {
-						aD.Name = addressbookname
+						addressdata.Name = addressbookname
 						delete(addressbook, normaddr)
 					}
-					aD.Address = normaddr
-					aD.Class = class
-					aD.ClassDate = [3]int64{0, 0, 0}
-					aD.ClassDate[class] = time.Unix()
-					aD.ClassCount = [3]int{0, 0, 0}
-					aD.ClassCount[class] = 1
-					retval[normaddr] = aD
+					addressdata.Address = normaddr
+					addressdata.Class = class
+					addressdata.ClassDate = [3]int64{0, 0, 0}
+					addressdata.ClassDate[class] = time.Unix()
+					addressdata.ClassCount = [3]int{0, 0, 0}
+					addressdata.ClassCount[class] = 1
+					retval[normaddr] = addressdata
 				}
 			}
 
