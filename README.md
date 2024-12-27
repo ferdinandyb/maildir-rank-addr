@@ -31,6 +31,8 @@ The easiest way to install is running:
 go install github.com/ferdinandyb/maildir-rank-addr@latest
 ```
 
+Arch users can also install it from AUR, either the `maildir-rank-addr` or the `maildir-rank-addr-git` package.
+
 # Usage
 
 At the minimum, you need to specify where your maildir formatted email are:
