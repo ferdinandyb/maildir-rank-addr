@@ -47,10 +47,10 @@ Please follow these general rules (adopted somewhat from the aerc contribution g
 - If you are fixing a regression introduced by another commit, add a `Fixes:`
   trailer with the commit id and its title.
 - When in doubt, follow the format and layout of the recent existing commits
-- (well, at least the later ones :)).
+  (well, at least the later ones :)).
 
-There is a great reference for commit messages in the
-[Linux kernel documentation](https://www.kernel.org/doc/html/latest/process/submitting-patches.html#describe-your-changes) and on [tpope's blog](https://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html).
+For why and further references, please see [my blog](https://bence.ferdinandy.com/gitcraft/).
+
 
 ## Formatting
 
