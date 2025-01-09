@@ -92,7 +92,7 @@ func loadConfig() Config {
 	config := Config{
 		maildirs:                 maildirs,
 		outputpath:               outputpath,
-		addresses:                addresses,
+		useraddresses:            addresses,
 		template:                 tmpl,
 		customFilters:            customFilters,
 		addressbookLookupCommand: addressbookLookupCommand,

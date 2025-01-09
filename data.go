@@ -22,7 +22,7 @@ type AddressData struct {
 type Config struct {
 	maildirs                 []string
 	outputpath               string
-	addresses                []*regexp.Regexp
+	useraddresses            []*regexp.Regexp
 	template                 *template.Template
 	customFilters            []*regexp.Regexp
 	addressbookLookupCommand *exec.Cmd

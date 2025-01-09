@@ -39,15 +39,15 @@ func messageParser(
 func assignClass(
 	field string,
 	sender string,
-	addresses []*regexp.Regexp,
+	useraddresses []*regexp.Regexp,
 ) int {
-	if len(addresses) == 0 {
+	if len(useraddresses) == 0 {
 		return 2
 	}
 	if field == "from" {
 		return 0
 	}
-	for _, addr := range addresses {
+	for _, addr := range useraddresses {
 		if addr.MatchString(sender) {
 			switch field {
 			case "to", "bcc":
@@ -93,7 +93,7 @@ func filterAddress(address string, customFilters []*regexp.Regexp) bool {
 func processHeaders(
 	headers <-chan *mail.Header,
 	retvalchan chan map[string]AddressData,
-	addresses []*regexp.Regexp,
+	useraddresses []*regexp.Regexp,
 	customFilters []*regexp.Regexp,
 	addressbook map[string]string,
 ) {
@@ -132,7 +132,7 @@ func processHeaders(
 				class := assignClass(
 					field,
 					sender,
-					addresses,
+					useraddresses,
 				)
 				if addressdata, ok := retval[normaddr]; ok {
 					if addressdata.Name == "" {
@@ -187,7 +187,7 @@ func processHeaders(
 	close(retvalchan)
 }
 
-func walkMaildir(path string, addresses []*regexp.Regexp, customFilters []*regexp.Regexp, addressbook map[string]string) map[string]AddressData {
+func walkMaildir(path string, useraddresses []*regexp.Regexp, customFilters []*regexp.Regexp, addressbook map[string]string) map[string]AddressData {
 	headers := make(chan *mail.Header)
 	messagePaths := make(chan string, 4096)
 
@@ -202,7 +202,7 @@ func walkMaildir(path string, addresses []*regexp.Regexp, customFilters []*regex
 	}
 
 	retvalchan := make(chan map[string]AddressData)
-	go processHeaders(headers, retvalchan, addresses, customFilters, addressbook)
+	go processHeaders(headers, retvalchan, useraddresses, customFilters, addressbook)
 
 	filepath.Walk(path, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
@@ -229,10 +229,10 @@ func walkMaildir(path string, addresses []*regexp.Regexp, customFilters []*regex
 	return <-retvalchan
 }
 
-func walkMaildirs(paths []string, addresses []*regexp.Regexp, customFilters []*regexp.Regexp, addressbook map[string]string) map[string]AddressData {
+func walkMaildirs(paths []string, useraddresses []*regexp.Regexp, customFilters []*regexp.Regexp, addressbook map[string]string) map[string]AddressData {
 	data := make(map[string]AddressData)
 	for _, maildir := range paths {
-		dataNew := walkMaildir(maildir, addresses, customFilters, addressbook)
+		dataNew := walkMaildir(maildir, useraddresses, customFilters, addressbook)
 		if len(data) == 0 {
 			data = dataNew
 			continue
