@@ -55,3 +55,7 @@ There is a great reference for commit messages in the
 ## Formatting
 
 Format the code with [gofumpt](https://github.com/mvdan/gofumpt).
+
+## Testing
+
+Please run test with `go test`. If possible, write tests as well as part of your commits.
