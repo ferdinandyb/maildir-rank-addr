@@ -90,7 +90,96 @@ func filterAddress(address string, customFilters []*regexp.Regexp) bool {
 	return false
 }
 
-func processHeaders(
+func processHeader(
+	header *mail.Header,
+	addressmap map[string]AddressData,
+	useraddresses []*regexp.Regexp,
+	customFilters []*regexp.Regexp,
+	addressbook map[string]string,
+) error {
+	fields := [4]string{"to", "cc", "bcc", "from"}
+	time, err := header.Date()
+	if err != nil {
+		return err
+	}
+
+	senderaddress, err := header.AddressList("from")
+	if err != nil {
+		return err
+	}
+	var sender string
+
+	if len(senderaddress) > 0 {
+		sender = strings.ToLower(senderaddress[0].Address)
+	} else {
+		sender = ""
+	}
+
+	for _, field := range fields {
+		header, err := header.AddressList(field)
+		if err != nil {
+			continue
+		}
+		for _, address := range header {
+			normaddr := strings.ToLower(address.Address)
+			if filterAddress(normaddr, customFilters) {
+				continue
+			}
+			class := assignClass(
+				field,
+				sender,
+				useraddresses,
+			)
+			if addressdata, ok := addressmap[normaddr]; ok {
+				if addressdata.Name == "" {
+					dec := new(mime.WordDecoder)
+					name, err := dec.DecodeHeader(address.Name)
+					if err != nil {
+						continue
+					}
+					if (strings.ToLower(name) != normaddr) && (strings.ToLower(name) != "") {
+						addressdata.Names = append(addressdata.Names, name)
+					}
+				}
+				if addressdata.Class < class {
+					addressdata.Class = class
+				}
+				if addressdata.ClassDate[class] < time.Unix() {
+					addressdata.ClassDate[class] = time.Unix()
+				}
+				addressdata.ClassCount[class]++
+				addressmap[normaddr] = addressdata
+			} else {
+				addressdata := AddressData{}
+				addressbookname := addressbook[normaddr]
+				if addressbookname == "" {
+					dec := new(mime.WordDecoder)
+					name, err := dec.DecodeHeader(address.Name)
+					if err != nil {
+						continue
+					}
+					if (strings.ToLower(name) != normaddr) && (strings.ToLower(name) != "") {
+						addressdata.Names = append(addressdata.Names, name)
+					}
+				} else {
+					addressdata.Name = addressbookname
+					delete(addressbook, normaddr)
+				}
+				addressdata.Address = normaddr
+				addressdata.Class = class
+				addressdata.ClassDate = [3]int64{0, 0, 0}
+				addressdata.ClassDate[class] = time.Unix()
+				addressdata.ClassCount = [3]int{0, 0, 0}
+				addressdata.ClassCount[class] = 1
+				addressmap[normaddr] = addressdata
+			}
+		}
+
+	}
+	return nil
+}
+
+func processHeaderQueue(
 	headers <-chan *mail.Header,
 	retvalchan chan map[string]AddressData,
 	useraddresses []*regexp.Regexp,
@@ -98,92 +187,14 @@ func processHeaders(
 	addressbook map[string]string,
 ) {
 	count := 0
-	retval := make(map[string]AddressData)
-	fields := [4]string{"to", "cc", "bcc", "from"}
+	addressmap := make(map[string]AddressData)
 	for header := range headers {
 		count++
-		time, err := header.Date()
-		if err != nil {
-			continue
-		}
-
-		senderaddress, err := header.AddressList("from")
-		var sender string
-
-		if len(senderaddress) > 0 {
-			sender = strings.ToLower(senderaddress[0].Address)
-		} else {
-			sender = ""
-		}
-		if err != nil {
-			continue
-		}
-
-		for _, field := range fields {
-			header, err := header.AddressList(field)
-			if err != nil {
-				continue
-			}
-			for _, address := range header {
-				normaddr := strings.ToLower(address.Address)
-				if filterAddress(normaddr, customFilters) {
-					continue
-				}
-				class := assignClass(
-					field,
-					sender,
-					useraddresses,
-				)
-				if addressdata, ok := retval[normaddr]; ok {
-					if addressdata.Name == "" {
-						dec := new(mime.WordDecoder)
-						name, err := dec.DecodeHeader(address.Name)
-						if err != nil {
-							continue
-						}
-						if (strings.ToLower(name) != normaddr) && (strings.ToLower(name) != "") {
-							addressdata.Names = append(addressdata.Names, name)
-						}
-					}
-					if addressdata.Class < class {
-						addressdata.Class = class
-					}
-					if addressdata.ClassDate[class] < time.Unix() {
-						addressdata.ClassDate[class] = time.Unix()
-					}
-					addressdata.ClassCount[class]++
-					retval[normaddr] = addressdata
-				} else {
-					addressdata := AddressData{}
-					addressbookname := addressbook[normaddr]
-					if addressbookname == "" {
-						dec := new(mime.WordDecoder)
-						name, err := dec.DecodeHeader(address.Name)
-						if err != nil {
-							continue
-						}
-						if (strings.ToLower(name) != normaddr) && (strings.ToLower(name) != "") {
-							addressdata.Names = append(addressdata.Names, name)
-						}
-					} else {
-						addressdata.Name = addressbookname
-						delete(addressbook, normaddr)
-					}
-					addressdata.Address = normaddr
-					addressdata.Class = class
-					addressdata.ClassDate = [3]int64{0, 0, 0}
-					addressdata.ClassDate[class] = time.Unix()
-					addressdata.ClassCount = [3]int{0, 0, 0}
-					addressdata.ClassCount[class] = 1
-					retval[normaddr] = addressdata
-				}
-			}
-
-		}
+		processHeader(header, addressmap, useraddresses, customFilters, addressbook)
 
 	}
 	fmt.Println("Read ", count, " messages")
-	retvalchan <- retval
+	retvalchan <- addressmap
 	close(retvalchan)
 }
 
@@ -202,7 +213,7 @@ func walkMaildir(path string, useraddresses []*regexp.Regexp, customFilters []*r
 	}
 
 	retvalchan := make(chan map[string]AddressData)
-	go processHeaders(headers, retvalchan, useraddresses, customFilters, addressbook)
+	go processHeaderQueue(headers, retvalchan, useraddresses, customFilters, addressbook)
 
 	filepath.Walk(path, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
