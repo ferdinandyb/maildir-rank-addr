@@ -90,20 +90,20 @@ func filterAddress(address string, customFilters []*regexp.Regexp) bool {
 	return false
 }
 
-func processHeader(
-	header *mail.Header,
+func processEnvelope(
+	envelope *mail.Header,
 	addressmap map[string]AddressData,
 	useraddresses []*regexp.Regexp,
 	customFilters []*regexp.Regexp,
 	addressbook map[string]string,
 ) error {
-	fields := [4]string{"to", "cc", "bcc", "from"}
-	time, err := header.Date()
+	addressheaders := [4]string{"to", "cc", "bcc", "from"}
+	time, err := envelope.Date()
 	if err != nil {
 		return err
 	}
 
-	senderaddress, err := header.AddressList("from")
+	senderaddress, err := envelope.AddressList("from")
 	if err != nil {
 		return err
 	}
@@ -115,8 +115,8 @@ func processHeader(
 		sender = ""
 	}
 
-	for _, field := range fields {
-		header, err := header.AddressList(field)
+	for _, field := range addressheaders {
+		header, err := envelope.AddressList(field)
 		if err != nil {
 			continue
 		}
@@ -179,8 +179,8 @@ func processHeader(
 	return nil
 }
 
-func processHeaderQueue(
-	headers <-chan *mail.Header,
+func processEnvelopeChan(
+	envelopechan <-chan *mail.Header,
 	retvalchan chan map[string]AddressData,
 	useraddresses []*regexp.Regexp,
 	customFilters []*regexp.Regexp,
@@ -188,9 +188,9 @@ func processHeaderQueue(
 ) {
 	count := 0
 	addressmap := make(map[string]AddressData)
-	for header := range headers {
+	for envelope := range envelopechan {
 		count++
-		processHeader(header, addressmap, useraddresses, customFilters, addressbook)
+		processEnvelope(envelope, addressmap, useraddresses, customFilters, addressbook)
 
 	}
 	fmt.Println("Read ", count, " messages")
@@ -199,7 +199,7 @@ func processHeaderQueue(
 }
 
 func walkMaildir(path string, useraddresses []*regexp.Regexp, customFilters []*regexp.Regexp, addressbook map[string]string) map[string]AddressData {
-	headers := make(chan *mail.Header)
+	envelopechan := make(chan *mail.Header)
 	messagePaths := make(chan string, 4096)
 
 	var wg sync.WaitGroup
@@ -208,12 +208,12 @@ func walkMaildir(path string, useraddresses []*regexp.Regexp, customFilters []*r
 		go func() {
 			defer wg.Done()
 
-			messageParser(messagePaths, headers)
+			messageParser(messagePaths, envelopechan)
 		}()
 	}
 
 	retvalchan := make(chan map[string]AddressData)
-	go processHeaderQueue(headers, retvalchan, useraddresses, customFilters, addressbook)
+	go processEnvelopeChan(envelopechan, retvalchan, useraddresses, customFilters, addressbook)
 
 	filepath.Walk(path, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
@@ -235,7 +235,7 @@ func walkMaildir(path string, useraddresses []*regexp.Regexp, customFilters []*r
 	close(messagePaths)
 
 	wg.Wait()
-	close(headers)
+	close(envelopechan)
 
 	return <-retvalchan
 }
