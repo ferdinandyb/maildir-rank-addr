@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestAddressbookOverride(t *testing.T) {
+func TestE2EAddressbookOverride(t *testing.T) {
 	addressbook := map[string]string{
 		"foo@bar.com":           "override FOO",
 		"something@example.com": "override EXAMPLE",
