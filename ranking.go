@@ -52,51 +52,51 @@ func normalizeAddressNames(aD AddressData) AddressData {
 
 func calculateRanks(data map[string]AddressData) map[int]map[string]AddressData {
 	type KeyValue struct {
-		Key   string
-		Value AddressData
+		normaddr string
+		addrdata AddressData
 	}
 	classedData := map[int]map[string]AddressData{
 		2: {},
 		1: {},
 		0: {},
 	}
-	for addr, value := range data {
-		classedData[value.Class][addr] = normalizeAddressNames(value)
+	for normaddr, aD := range data {
+		classedData[aD.Class][normaddr] = normalizeAddressNames(aD)
 	}
 
 	for class := 2; class >= 0; class-- {
 		thisclass, _ := classedData[class]
 		s := make([]KeyValue, 0, len(thisclass))
-		for k, v := range thisclass {
-			s = append(s, KeyValue{k, v})
+		for normaddr, addrdata := range thisclass {
+			s = append(s, KeyValue{normaddr, addrdata})
 		}
 		sort.SliceStable(s, func(i, j int) bool {
-			if s[i].Value.ClassCount[class] == s[j].Value.ClassCount[class] {
-				return s[i].Value.Address < s[j].Value.Address
+			if s[i].addrdata.ClassCount[class] == s[j].addrdata.ClassCount[class] {
+				return s[i].addrdata.Address < s[j].addrdata.Address
 			} else {
-				return s[i].Value.ClassCount[class] > s[j].Value.ClassCount[class]
+				return s[i].addrdata.ClassCount[class] > s[j].addrdata.ClassCount[class]
 			}
 		})
 		for rank, kv := range s {
-			thisval, _ := thisclass[kv.Key]
+			thisval, _ := thisclass[kv.normaddr]
 			thisval.FrequencyRank = rank
-			thisclass[kv.Key] = thisval
+			thisclass[kv.normaddr] = thisval
 		}
 		sort.SliceStable(s, func(i, j int) bool {
-			if s[i].Value.ClassDate[class] == s[j].Value.ClassDate[class] {
-				return s[i].Value.Address < s[j].Value.Address
+			if s[i].addrdata.ClassDate[class] == s[j].addrdata.ClassDate[class] {
+				return s[i].addrdata.Address < s[j].addrdata.Address
 			} else {
-				return s[i].Value.ClassDate[class] > s[j].Value.ClassDate[class]
+				return s[i].addrdata.ClassDate[class] > s[j].addrdata.ClassDate[class]
 			}
 		})
 		for rank, kv := range s {
-			thisval, _ := thisclass[kv.Key]
+			thisval, _ := thisclass[kv.normaddr]
 			thisval.RecencyRank = rank
-			thisclass[kv.Key] = thisval
+			thisclass[kv.normaddr] = thisval
 		}
-		for k, v := range thisclass {
-			v.TotalRank = v.FrequencyRank + v.RecencyRank
-			thisclass[k] = v
+		for normaddr, addrdata := range thisclass {
+			addrdata.TotalRank = addrdata.FrequencyRank + addrdata.RecencyRank
+			thisclass[normaddr] = addrdata
 		}
 
 		classedData[class] = thisclass
