@@ -35,6 +35,29 @@ func TestE2EAddressbookOverride(t *testing.T) {
 	}
 }
 
+func TestE2ENormalization(t *testing.T) {
+	data := walkMaildirs([]string{"./testdata/endtoend"}, nil, nil)
+	classeddata := calculateRanks(data, nil)
+
+	tests := []struct {
+		testname string
+		class    int
+		address  string
+		want     string
+	}{
+		{"normalize 1", 2, "diacritics@hungary.hu", "ouooueau"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.testname, func(t *testing.T) {
+			class, ok := classeddata[tt.class]
+			addr, ok := class[tt.address]
+			assert.True(t, ok)
+			assert.Equal(t, tt.want, addr.NormalizedName)
+		})
+	}
+}
+
 func TestE2EClass(t *testing.T) {
 	data := walkMaildirs(
 		[]string{"./testdata/endtoend"},
