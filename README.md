@@ -64,7 +64,8 @@ The paths to the folders that will be scanned. No default is set for this.
 **outputpath**
 
 By default results are output to
-`$HOME/.cache/maildir-rank-addr/addressbook.tsv"`.
+`$HOME/.cache/maildir-rank-addr/addressbook.tsv"`. Specifing `-` as the
+outputpath will print to STDOUT.
 
 **addresses**
 

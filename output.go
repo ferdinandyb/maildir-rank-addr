@@ -16,10 +16,18 @@ func saveData(
 	addressbook map[string]string,
 	addUnmatched bool,
 ) {
-	os.MkdirAll(filepath.Dir(path), os.ModePerm)
-	f, err := os.Create(path)
-	if err != nil {
-		log.Fatal(err)
+	var f *os.File
+	var err error
+	isstdout := path == "-"
+
+	if isstdout {
+		f = os.Stdout
+	} else {
+		os.MkdirAll(filepath.Dir(path), os.ModePerm)
+		f, err = os.Create(path)
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 
 	defer f.Close()
@@ -56,5 +64,7 @@ func saveData(
 			tmpl.Execute(f, aD)
 		}
 	}
-	fmt.Println(count, " addresses written to ", path)
+	if !isstdout {
+		fmt.Println(count, " addresses written to ", path)
+	}
 }
