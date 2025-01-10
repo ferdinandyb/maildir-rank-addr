@@ -187,13 +187,18 @@ func processEnvelopeChan(
 	addressbook map[string]string,
 ) {
 	count := 0
+	errcount := 0
 	addressmap := make(map[string]AddressData)
 	for envelope := range envelopechan {
-		count++
-		processEnvelope(envelope, addressmap, useraddresses, customFilters, addressbook)
+		err := processEnvelope(envelope, addressmap, useraddresses, customFilters, addressbook)
+		if err != nil {
+			errcount++
+		} else {
+			count++
+		}
 
 	}
-	fmt.Println("Read ", count, " messages")
+	fmt.Println("Read", count+errcount, "files of which", count, "could be parsed.")
 	retvalchan <- addressmap
 	close(retvalchan)
 }
