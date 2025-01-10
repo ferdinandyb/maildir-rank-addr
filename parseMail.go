@@ -29,9 +29,9 @@ func messageParser(
 		r, err := mail.CreateReader(f)
 		if err != nil {
 			if utf8.ValidString(err.Error()) {
-				fmt.Fprintln(os.Stderr, err)
+				fmt.Fprintln(os.Stderr, path, err)
 			} else {
-				fmt.Fprintln(os.Stderr, "mail reader error, probably tried reading binary")
+				fmt.Fprintln(os.Stderr, path, "mail reader error, probably tried reading binary")
 			}
 			continue
 		}
