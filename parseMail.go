@@ -232,9 +232,10 @@ func walkMaildir(path string, useraddresses []*regexp.Regexp, customFilters []*r
 			return nil
 		}
 		switch filepath.Base(filepath.Dir(path)) {
-		case "new", "cur":
-			messagePaths <- path
+		case "tmp":
+			return nil
 		}
+		messagePaths <- path
 		return nil
 	})
 	close(messagePaths)

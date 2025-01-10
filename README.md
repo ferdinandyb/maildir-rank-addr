@@ -1,8 +1,8 @@
 # Description
 
-Generates a ranked addressbook from a maildir folder. It can be used in MUA's
-like [aerc](http://aerc-mail.org) or [mutt](http://www.mutt.org/) by grepping the
-list.
+Generates a ranked addressbook from a maildir (or similar one-mail-per-file)
+folder. It can be used in MUA's like [aerc](http://aerc-mail.org) or
+[mutt](http://www.mutt.org/) by grepping the list.
 
 Why? No need to manually edit an address book, yet the cached ranking is
 available extremely fast.
@@ -60,6 +60,9 @@ Supported flags:
 **maildir**
 
 The paths to the folders that will be scanned. No default is set for this.
+These actually do NOT need to be maildir format folders, it only assumes that
+each file is an email (it will skip any hidden files and anything that is in
+a folder called `tmp`).
 
 **outputpath**
 
