@@ -3,6 +3,8 @@ package main
 import (
 	"regexp"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestAssignClass(t *testing.T) {
@@ -29,9 +31,7 @@ func TestAssignClass(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.testname, func(t *testing.T) {
 			ans := assignClass(tt.in_field, tt.in_sender, tt.in_useraddresses)
-			if ans != tt.want {
-				t.Errorf("got %d, want %d", ans, tt.want)
-			}
+			assert.Equal(t, tt.want, ans)
 		})
 	}
 }
