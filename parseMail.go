@@ -230,10 +230,10 @@ func walkMaildir(
 		}
 
 		if info.IsDir() {
-			return nil
-		}
-		switch filepath.Base(filepath.Dir(path)) {
-		case "tmp":
+			switch filepath.Base(filepath.Dir(path)) {
+			case "tmp", ".notmuch":
+				return filepath.SkipDir
+			}
 			return nil
 		}
 		messagePaths <- path
