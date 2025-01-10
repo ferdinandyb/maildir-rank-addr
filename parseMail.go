@@ -21,12 +21,12 @@ func messageParser(
 	for path := range paths {
 		f, err := os.Open(path)
 		if err != nil {
-			fmt.Println(err)
+			fmt.Fprintln(os.Stderr, err)
 			continue
 		}
 		r, err := mail.CreateReader(f)
 		if err != nil {
-			fmt.Println(err)
+			fmt.Fprintln(os.Stderr, err)
 			f.Close()
 			continue
 		}

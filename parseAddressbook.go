@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"log"
+	"os"
 	"os/exec"
 	"strings"
 )
@@ -26,7 +27,7 @@ func parseAddressbook(
 	for scanner.Scan() {
 		slice := strings.Split(scanner.Text(), "\t")
 		if len(slice) < 2 {
-			fmt.Println("Couldn't parse ", scanner.Text())
+			fmt.Fprintln(os.Stderr, "Couldn't parse ", scanner.Text())
 		} else {
 			addressbook[strings.ToLower(slice[0])] = slice[1]
 		}
