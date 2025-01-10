@@ -60,7 +60,10 @@ func assignClass(
 	return 0
 }
 
-func filterAddress(address string, customFilters []*regexp.Regexp) bool {
+func filterAddress(
+	address string,
+	customFilters []*regexp.Regexp,
+) bool {
 	_, err := mail.ParseAddress(address)
 	if err != nil {
 		return true
@@ -203,7 +206,12 @@ func processEnvelopeChan(
 	close(retvalchan)
 }
 
-func walkMaildir(path string, useraddresses []*regexp.Regexp, customFilters []*regexp.Regexp, addressbook map[string]string) map[string]AddressData {
+func walkMaildir(
+	path string,
+	useraddresses []*regexp.Regexp,
+	customFilters []*regexp.Regexp,
+	addressbook map[string]string,
+) map[string]AddressData {
 	envelopechan := make(chan *mail.Header)
 	messagePaths := make(chan string, 4096)
 
@@ -246,7 +254,12 @@ func walkMaildir(path string, useraddresses []*regexp.Regexp, customFilters []*r
 	return <-retvalchan
 }
 
-func walkMaildirs(paths []string, useraddresses []*regexp.Regexp, customFilters []*regexp.Regexp, addressbook map[string]string) map[string]AddressData {
+func walkMaildirs(
+	paths []string,
+	useraddresses []*regexp.Regexp,
+	customFilters []*regexp.Regexp,
+	addressbook map[string]string,
+) map[string]AddressData {
 	data := make(map[string]AddressData)
 	for _, maildir := range paths {
 		dataNew := walkMaildir(maildir, useraddresses, customFilters, addressbook)
