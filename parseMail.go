@@ -9,6 +9,7 @@ import (
 	"runtime"
 	"strings"
 	"sync"
+	"unicode/utf8"
 
 	_ "github.com/emersion/go-message/charset"
 	"github.com/emersion/go-message/mail"
@@ -20,18 +21,21 @@ func messageParser(
 ) {
 	for path := range paths {
 		f, err := os.Open(path)
+		defer f.Close()
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err)
 			continue
 		}
 		r, err := mail.CreateReader(f)
 		if err != nil {
-			fmt.Fprintln(os.Stderr, err)
-			f.Close()
+			if utf8.ValidString(err.Error()) {
+				fmt.Fprintln(os.Stderr, err)
+			} else {
+				fmt.Fprintln(os.Stderr, "mail reader error, probably tried reading binary")
+			}
 			continue
 		}
 		h := &mail.Header{Header: r.Header.Header}
-		f.Close()
 		headers <- h
 	}
 }
