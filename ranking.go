@@ -40,19 +40,28 @@ func getMostFrequent(names []string) string {
 	return lastname
 }
 
+func getName(
+	normaddr string,
+	addrdata AddressData,
+	addressbook map[string]string,
+) string {
+	bookname, ok := addressbook[normaddr]
+	if ok {
+		return bookname
+	}
+	return getMostFrequent(addrdata.Names)
+}
+
 func isMn(r rune) bool {
 	return unicode.Is(unicode.Mn, r) // Mn: nonspacing marks
 }
 
-func normalizeAddressNames(aD AddressData) AddressData {
-	if aD.Name != "" {
-		return aD
-	}
-	aD.Name = getMostFrequent(aD.Names)
+func normalizeAddressNames(
+	aD AddressData,
+) string {
 	t := transform.Chain(norm.NFD, transform.RemoveFunc(isMn), norm.NFC)
 	normStr, _, _ := transform.String(t, aD.Name)
-	aD.NormalizedName = normStr
-	return aD
+	return normStr
 }
 
 func sortByFrequency(s []KeyValue, class int) {
@@ -103,14 +112,19 @@ func getClassRanks(addrmap map[string]AddressData, class int) map[string]Address
 	return addrmap
 }
 
-func calculateRanks(data map[string]AddressData) map[int]map[string]AddressData {
+func calculateRanks(
+	data map[string]AddressData,
+	addressbook map[string]string,
+) map[int]map[string]AddressData {
 	classedData := map[int]map[string]AddressData{
 		2: {},
 		1: {},
 		0: {},
 	}
 	for normaddr, aD := range data {
-		classedData[aD.Class][normaddr] = normalizeAddressNames(aD)
+		aD.Name = getName(normaddr, aD, addressbook)
+		aD.NormalizedName = normalizeAddressNames(aD)
+		classedData[aD.Class][normaddr] = aD
 	}
 
 	for class := 2; class >= 0; class-- {

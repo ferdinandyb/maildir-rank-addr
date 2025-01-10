@@ -98,7 +98,6 @@ func processEnvelope(
 	addressmap map[string]AddressData,
 	useraddresses []*regexp.Regexp,
 	customFilters []*regexp.Regexp,
-	addressbook map[string]string,
 ) error {
 	addressheaders := [4]string{"to", "cc", "bcc", "from"}
 	time, err := envelope.Date()
@@ -133,16 +132,14 @@ func processEnvelope(
 				sender,
 				useraddresses,
 			)
+			dec := new(mime.WordDecoder)
+			name, err := dec.DecodeHeader(address.Name)
+			if err != nil {
+				continue
+			}
 			if addressdata, ok := addressmap[normaddr]; ok {
-				if addressdata.Name == "" {
-					dec := new(mime.WordDecoder)
-					name, err := dec.DecodeHeader(address.Name)
-					if err != nil {
-						continue
-					}
-					if (strings.ToLower(name) != normaddr) && (strings.ToLower(name) != "") {
-						addressdata.Names = append(addressdata.Names, name)
-					}
+				if (strings.ToLower(name) != normaddr) && (strings.ToLower(name) != "") {
+					addressdata.Names = append(addressdata.Names, name)
 				}
 				if addressdata.Class < class {
 					addressdata.Class = class
@@ -154,19 +151,8 @@ func processEnvelope(
 				addressmap[normaddr] = addressdata
 			} else {
 				addressdata := AddressData{}
-				addressbookname := addressbook[normaddr]
-				if addressbookname == "" {
-					dec := new(mime.WordDecoder)
-					name, err := dec.DecodeHeader(address.Name)
-					if err != nil {
-						continue
-					}
-					if (strings.ToLower(name) != normaddr) && (strings.ToLower(name) != "") {
-						addressdata.Names = append(addressdata.Names, name)
-					}
-				} else {
-					addressdata.Name = addressbookname
-					delete(addressbook, normaddr)
+				if (strings.ToLower(name) != normaddr) && (strings.ToLower(name) != "") {
+					addressdata.Names = append(addressdata.Names, name)
 				}
 				addressdata.Address = normaddr
 				addressdata.Class = class
@@ -187,13 +173,17 @@ func processEnvelopeChan(
 	retvalchan chan map[string]AddressData,
 	useraddresses []*regexp.Regexp,
 	customFilters []*regexp.Regexp,
-	addressbook map[string]string,
 ) {
 	count := 0
 	errcount := 0
 	addressmap := make(map[string]AddressData)
 	for envelope := range envelopechan {
-		err := processEnvelope(envelope, addressmap, useraddresses, customFilters, addressbook)
+		err := processEnvelope(
+			envelope,
+			addressmap,
+			useraddresses,
+			customFilters,
+		)
 		if err != nil {
 			errcount++
 		} else {
@@ -210,7 +200,6 @@ func walkMaildir(
 	path string,
 	useraddresses []*regexp.Regexp,
 	customFilters []*regexp.Regexp,
-	addressbook map[string]string,
 ) map[string]AddressData {
 	envelopechan := make(chan *mail.Header)
 	messagePaths := make(chan string, 4096)
@@ -226,7 +215,7 @@ func walkMaildir(
 	}
 
 	retvalchan := make(chan map[string]AddressData)
-	go processEnvelopeChan(envelopechan, retvalchan, useraddresses, customFilters, addressbook)
+	go processEnvelopeChan(envelopechan, retvalchan, useraddresses, customFilters)
 
 	filepath.Walk(path, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
@@ -258,11 +247,10 @@ func walkMaildirs(
 	paths []string,
 	useraddresses []*regexp.Regexp,
 	customFilters []*regexp.Regexp,
-	addressbook map[string]string,
 ) map[string]AddressData {
 	data := make(map[string]AddressData)
 	for _, maildir := range paths {
-		dataNew := walkMaildir(maildir, useraddresses, customFilters, addressbook)
+		dataNew := walkMaildir(maildir, useraddresses, customFilters)
 		if len(data) == 0 {
 			data = dataNew
 			continue

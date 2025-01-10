@@ -12,8 +12,8 @@ func TestE2EAddressbookOverride(t *testing.T) {
 		"foo@bar.com":           "override FOO",
 		"something@example.com": "override EXAMPLE",
 	}
-	data := walkMaildirs([]string{"./testdata/endtoend"}, nil, nil, addressbook)
-	classeddata := calculateRanks(data)
+	data := walkMaildirs([]string{"./testdata/endtoend"}, nil, nil)
+	classeddata := calculateRanks(data, addressbook)
 
 	tests := []struct {
 		testname string
@@ -40,9 +40,8 @@ func TestE2EClass(t *testing.T) {
 		[]string{"./testdata/endtoend"},
 		[]*regexp.Regexp{regexp.MustCompile(".+@myself.me")},
 		nil,
-		nil,
 	)
-	classeddata := calculateRanks(data)
+	classeddata := calculateRanks(data, nil)
 
 	tests := []struct {
 		testname string
@@ -69,9 +68,8 @@ func TestE2ERankingRecency(t *testing.T) {
 		[]string{"./testdata/endtoend"},
 		[]*regexp.Regexp{regexp.MustCompile(".+@myself.me")},
 		nil,
-		nil,
 	)
-	classeddata := calculateRanks(data)
+	classeddata := calculateRanks(data, nil)
 
 	tests := []struct {
 		testname string
@@ -97,9 +95,8 @@ func TestE2ERankingFrequency(t *testing.T) {
 		[]string{"./testdata/endtoend"},
 		[]*regexp.Regexp{regexp.MustCompile(".+@myself.me")},
 		nil,
-		nil,
 	)
-	classeddata := calculateRanks(data)
+	classeddata := calculateRanks(data, nil)
 
 	tests := []struct {
 		testname string
