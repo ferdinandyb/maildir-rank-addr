@@ -64,3 +64,31 @@ func TestE2EClass(t *testing.T) {
 		})
 	}
 }
+
+func TestE2ERankingRecency(t *testing.T) {
+	data := walkMaildirs(
+		[]string{"./testdata/endtoend"},
+		[]*regexp.Regexp{regexp.MustCompile(".+@myself.me")},
+		nil,
+		nil,
+	)
+	classeddata := calculateRanks(data)
+
+	tests := []struct {
+		testname string
+		lower    string
+		higher   string
+	}{
+		{"class 2 check 1", "friend1@friends.com", "friend3@friends.com"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.testname, func(t *testing.T) {
+			assert.Less(
+				t,
+				classeddata[2][tt.lower].RecencyRank,
+				classeddata[2][tt.higher].RecencyRank,
+			)
+		})
+	}
+}
