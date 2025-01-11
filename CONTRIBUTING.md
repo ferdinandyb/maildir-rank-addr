@@ -58,4 +58,8 @@ Format the code with [gofumpt](https://github.com/mvdan/gofumpt).
 
 ## Testing
 
-Please run test with `go test`. If possible, write tests as well as part of your commits.
+Please run test with `go test`. If possible, write tests as well as part of
+your commits. I call tests "e2e" that start out by reading the email files in
+the testdata folder and do asserts only after the final dataset has been put
+together (i.e. the output of `calculateRanks`). Unit tests of specific
+functions should go into a different file, e.g. like `parseMail_test.go`.
