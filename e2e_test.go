@@ -3,6 +3,7 @@ package main
 import (
 	"regexp"
 	"testing"
+	"text/template"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -13,7 +14,7 @@ func TestE2EAddressbookOverride(t *testing.T) {
 		"something@example.com": "override EXAMPLE",
 	}
 	data := walkMaildirs([]string{"./testdata/endtoend"}, nil, nil)
-	classeddata := calculateRanks(data, addressbook)
+	classeddata := calculateRanks(data, addressbook, nil)
 
 	tests := []struct {
 		testname string
@@ -37,7 +38,7 @@ func TestE2EAddressbookOverride(t *testing.T) {
 
 func TestE2ENormalization(t *testing.T) {
 	data := walkMaildirs([]string{"./testdata/endtoend"}, nil, nil)
-	classeddata := calculateRanks(data, nil)
+	classeddata := calculateRanks(data, nil, nil)
 
 	tests := []struct {
 		testname string
@@ -64,7 +65,7 @@ func TestE2EClass(t *testing.T) {
 		[]*regexp.Regexp{regexp.MustCompile(".+@myself.me")},
 		nil,
 	)
-	classeddata := calculateRanks(data, nil)
+	classeddata := calculateRanks(data, nil, nil)
 
 	tests := []struct {
 		testname string
@@ -92,7 +93,7 @@ func TestE2ERankingRecency(t *testing.T) {
 		[]*regexp.Regexp{regexp.MustCompile(".+@myself.me")},
 		nil,
 	)
-	classeddata := calculateRanks(data, nil)
+	classeddata := calculateRanks(data, nil, nil)
 
 	tests := []struct {
 		testname string
@@ -119,7 +120,7 @@ func TestE2ERankingFrequency(t *testing.T) {
 		[]*regexp.Regexp{regexp.MustCompile(".+@myself.me")},
 		nil,
 	)
-	classeddata := calculateRanks(data, nil)
+	classeddata := calculateRanks(data, nil, nil)
 
 	tests := []struct {
 		testname string
@@ -135,6 +136,66 @@ func TestE2ERankingFrequency(t *testing.T) {
 				t,
 				classeddata[2][tt.lower].FrequencyRank,
 				classeddata[2][tt.higher].FrequencyRank,
+			)
+		})
+	}
+}
+
+func TestE2EListTemplate(t *testing.T) {
+	data := walkMaildirs(
+		[]string{"./testdata/endtoend"},
+		[]*regexp.Regexp{regexp.MustCompile(".+@myself.me")},
+		nil,
+	)
+	listtmpl, _ := template.New("listtemplate").Parse("{{.ListName}}")
+	classeddata := calculateRanks(data, nil, listtmpl)
+
+	tests := []struct {
+		testname string
+		class    int
+		normaddr string
+		wanted   string
+	}{
+		{"standard", 0, "somelist-devel@lists.sourceforge.net", "All-purpose somelist list"},
+		{"empty", 0, "empty@ietf.org", ""},
+		{"verylong", 0, "tls@ietf.org", "This is the mailing list for the Transport Layer Security working group of the IETF."},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.testname, func(t *testing.T) {
+			assert.Equal(
+				t,
+				classeddata[tt.class][tt.normaddr].Name,
+				tt.wanted,
+			)
+		})
+	}
+}
+
+func TestE2EListTemplateDisable(t *testing.T) {
+	data := walkMaildirs(
+		[]string{"./testdata/endtoend"},
+		[]*regexp.Regexp{regexp.MustCompile(".+@myself.me")},
+		nil,
+	)
+	listtmpl, _ := template.New("listtemplate").Parse("DISABLELIST")
+	classeddata := calculateRanks(data, nil, listtmpl)
+
+	tests := []struct {
+		testname string
+		class    int
+		normaddr string
+		wanted   string
+	}{
+		{"standard", 0, "somelist-devel@lists.sourceforge.net", "Project Maintainer via somelist-devel"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.testname, func(t *testing.T) {
+			assert.Equal(
+				t,
+				classeddata[tt.class][tt.normaddr].Name,
+				tt.wanted,
 			)
 		})
 	}

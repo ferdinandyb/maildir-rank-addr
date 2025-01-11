@@ -18,6 +18,7 @@ func loadConfig() Config {
 	pflag.StringSlice("maildir", []string{}, "comma separated list of paths to maildir folders")
 	pflag.String("outputpath", "", "path to output file")
 	pflag.String("template", "", "output template")
+	pflag.String("list-template", "", "list name template")
 	pflag.String("addr-book-cmd", "", "optional command to query addresses from your addressbook")
 	pflag.Bool("addr-book-add-unmatched", false, "flag to determine if you want unmatched addressbook contacts to be added to the output")
 	pflag.StringSlice("addresses", []string{}, "comma separated list of your email addresses (regex possible)")
@@ -40,6 +41,7 @@ func loadConfig() Config {
 	viper.SetDefault("addresses", []string{})
 	viper.SetDefault("filters", []string{})
 	viper.SetDefault("template", "{{.Address}}\t{{.Name}}")
+	viper.SetDefault("list-template", "{{.ListName}}")
 
 	configPath, err := pflag.CommandLine.GetString("config")
 	if configPath != "" && err == nil {
@@ -73,6 +75,7 @@ func loadConfig() Config {
 		addresses[i] = regexp.MustCompile(filter)
 	}
 	templateString := viper.GetString("template")
+	listtemplateString := viper.GetString("list-template")
 	addressbookLookupCommandString := viper.GetString("addr-book-cmd")
 	addressbookAddUnmatched := viper.GetBool("addr-book-add-unmatched")
 	var addressbookLookupCommand *exec.Cmd
@@ -87,13 +90,18 @@ func loadConfig() Config {
 	}
 	tmpl, err := template.New("output").Parse(templateString)
 	if err != nil {
-		panic(fmt.Errorf("bad template"))
+		panic(fmt.Errorf("bad output template"))
+	}
+	listtmpl, err := template.New("listtemplate").Parse(listtemplateString)
+	if err != nil {
+		panic(fmt.Errorf("bad list template"))
 	}
 	config := Config{
 		maildirs:                 maildirs,
 		outputpath:               outputpath,
 		useraddresses:            addresses,
 		template:                 tmpl,
+		listtemplate:             listtmpl,
 		customFilters:            customFilters,
 		addressbookLookupCommand: addressbookLookupCommand,
 		addressbookAddUnmatched:  addressbookAddUnmatched,

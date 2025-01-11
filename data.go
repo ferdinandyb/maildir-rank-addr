@@ -17,6 +17,8 @@ type AddressData struct {
 	ClassDate      [3]int64
 	Name           string
 	NormalizedName string
+	ListName       string
+	ListId         string
 }
 
 type Config struct {
@@ -24,6 +26,7 @@ type Config struct {
 	outputpath               string
 	useraddresses            []*regexp.Regexp
 	template                 *template.Template
+	listtemplate             *template.Template
 	customFilters            []*regexp.Regexp
 	addressbookLookupCommand *exec.Cmd
 	addressbookAddUnmatched  bool

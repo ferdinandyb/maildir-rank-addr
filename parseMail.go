@@ -109,6 +109,17 @@ func processEnvelope(
 		return err
 	}
 
+	listidheader := envelope.Get("list-id")
+	listidpattern := regexp.MustCompile(`(.*)\s*<(.+)>`)
+	listname := strings.Trim(
+		strings.Trim(
+			listidpattern.ReplaceAllString(listidheader, "$1"),
+			" ",
+		),
+		"\"",
+	)
+	listid := listidpattern.ReplaceAllString(listidheader, "$2")
+
 	senderaddress, err := envelope.AddressList("from")
 	if err != nil {
 		return err
@@ -157,6 +168,10 @@ func processEnvelope(
 				addressdata := AddressData{}
 				if (strings.ToLower(name) != normaddr) && (strings.ToLower(name) != "") {
 					addressdata.Names = append(addressdata.Names, name)
+				}
+				if len(listid) > 0 && (strings.Join(strings.Split(normaddr, "@"), ".") == listid) {
+					addressdata.ListName = listname
+					addressdata.ListId = listid
 				}
 				addressdata.Address = normaddr
 				addressdata.Class = class

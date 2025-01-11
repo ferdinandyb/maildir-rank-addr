@@ -1,8 +1,10 @@
 package main
 
 import (
+	"bytes"
 	"sort"
 	"strings"
+	"text/template"
 	"unicode"
 
 	"golang.org/x/text/transform"
@@ -44,10 +46,20 @@ func getName(
 	normaddr string,
 	addrdata AddressData,
 	addressbook map[string]string,
+	listtemplate *template.Template,
 ) string {
 	bookname, ok := addressbook[normaddr]
 	if ok {
 		return bookname
+	}
+	if len(addrdata.ListId) > 0 && listtemplate != nil {
+		var tpl bytes.Buffer
+		listtemplate.Execute(&tpl, addrdata)
+		listname := tpl.String()
+		if listname != "DISABLELIST" {
+			return listname
+		}
+
 	}
 	return getMostFrequent(addrdata.Names)
 }
@@ -115,6 +127,7 @@ func getClassRanks(addrmap map[string]AddressData, class int) map[string]Address
 func calculateRanks(
 	data map[string]AddressData,
 	addressbook map[string]string,
+	listtemplate *template.Template,
 ) map[int]map[string]AddressData {
 	classedData := map[int]map[string]AddressData{
 		2: {},
@@ -122,7 +135,7 @@ func calculateRanks(
 		0: {},
 	}
 	for normaddr, aD := range data {
-		aD.Name = getName(normaddr, aD, addressbook)
+		aD.Name = getName(normaddr, aD, addressbook, listtemplate)
 		aD.NormalizedName = normalizeAddressNames(aD)
 		classedData[aD.Class][normaddr] = aD
 	}

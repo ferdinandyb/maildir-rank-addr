@@ -8,6 +8,10 @@ func main() {
 		config.useraddresses,
 		config.customFilters,
 	)
-	classeddata := calculateRanks(data, addressbook)
+	classeddata := calculateRanks(
+		data,
+		addressbook,
+		config.listtemplate,
+	)
 	saveData(classeddata, config.outputpath, config.template, addressbook, config.addressbookAddUnmatched)
 }

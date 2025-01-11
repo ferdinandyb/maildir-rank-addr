@@ -47,14 +47,15 @@ or systemd timer).
 Supported flags:
 
 ```
-      --addr-book-cmd string   optional command to query addresses from your addressbook
-      --addr-book-add-unmatched if cmd is stated, determine wether to add unmatched addresses at the end of the file (true or false)
-      --addresses strings   comma separated list of your email addresses (regex possible)
-      --config string       path to config file
-      --filters strings     comma separated list of regexes to filter
-      --maildir strings     comma separated list of paths to maildir folders
-      --outputpath string   path to output file
-      --template string     output template
+      --addr-book-add-unmatched   flag to determine if you want unmatched addressbook contacts to be added to the output
+      --addr-book-cmd string      optional command to query addresses from your addressbook
+      --addresses strings         comma separated list of your email addresses (regex possible)
+      --config string             path to config file
+      --filters strings           comma separated list of regexes to filter
+      --list-template string      list name template
+      --maildir strings           comma separated list of paths to maildir folders
+      --outputpath string         path to output file
+      --template string           output template
 ```
 
 **maildir**
@@ -91,9 +92,19 @@ Available keys:
 	TotalRank
 	ClassCount
 	ClassDate
+	ListName: based on list-id header if applicable
+	ListId: based on list-id header if applicable
 ```
 
 Default: `{{.Address}}\t{{.Name}}`
+
+**list-template**
+
+If we detect a mailinglist, based on the list-id header, then in the above
+template `{{.Name}}` will be set to the output of this template. Set it to
+`DISABLELIST` to disable this feature.
+
+Default `{{.ListName}}`
 
 **filters**
 
