@@ -11,7 +11,7 @@ available extremely fast.
 
 - scans all your emails
 - ranks based on both recency and frequency of addresses
-- collects from To, Cc, Bcc and From fields
+- collects from To, Cc, Bcc, From, Sender and Reply-To fields
 - ranks addresses explicitly emailed by you higher
 - configurable output via go templates
 - uses the most frequent non-empty display name for each email

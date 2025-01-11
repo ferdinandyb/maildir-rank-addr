@@ -103,7 +103,7 @@ func processEnvelope(
 	useraddresses []*regexp.Regexp,
 	customFilters []*regexp.Regexp,
 ) error {
-	addressheaders := [4]string{"to", "cc", "bcc", "from"}
+	addressheaders := [6]string{"to", "cc", "bcc", "from", "sender", "reply-to"}
 	time, err := envelope.Date()
 	if err != nil {
 		return err
