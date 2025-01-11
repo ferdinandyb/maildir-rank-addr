@@ -23,6 +23,8 @@ available extremely fast.
 
 <sup>\*</sup>: compared to original python implementation for crunching (see Behind the scenes below) and compared to using notmuch query for address completion
 
+[Changelog](CHANGELOG.md)
+
 # Installation
 
 The easiest way to install is running:
