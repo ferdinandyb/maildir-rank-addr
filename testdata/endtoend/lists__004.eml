@@ -1,0 +1,8 @@
+Date: Tue, 14 Jan 2025 15:22:24 -0500
+To: bla@example.org
+List-Id: A Long sentence containing many many words and a suspicious newline
+ <bla.example.org>
+From: John Doe via bla
+ <bla@example.org>
+
+long without quoting
