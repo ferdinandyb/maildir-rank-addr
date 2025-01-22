@@ -1,8 +1,8 @@
 # Description
 
-Generates a ranked addressbook from a maildir (or similar one-mail-per-file)
-folder. It can be used in MUA's like [aerc](http://aerc-mail.org) or
-[mutt](http://www.mutt.org/) by grepping the list.
+Generates a ranked addressbook from your locally available email. It can be
+used in MUA's like [aerc](http://aerc-mail.org) or [mutt](http://www.mutt.org/)
+by grepping the list.
 
 Why? No need to manually edit an address book, yet the cached ranking is
 available extremely fast.
@@ -10,6 +10,7 @@ available extremely fast.
 ### Features:
 
 - scans all your emails
+- support maildir or similar one-email-per-file formats, and mbox
 - ranks based on both recency and frequency of addresses
 - collects from To, Cc, Bcc, From, Sender and Reply-To fields
 - ranks addresses explicitly emailed by you higher
@@ -63,9 +64,9 @@ Supported flags:
 **maildir**
 
 The paths to the folders that will be scanned. No default is set for this.
-These actually do NOT need to be maildir format folders, it only assumes that
-each file is an email (it will skip any hidden files and anything that is in
-a folder called `tmp`).
+These actually do NOT need to be maildir format folders, it will try to read
+all files as an email or an mbox (it will skip any hidden files and anything
+that is in a folder called `tmp` or `.notmuch`).
 
 **outputpath**
 

@@ -5,6 +5,7 @@ go 1.22.0
 toolchain go1.23.4
 
 require (
+	github.com/emersion/go-mbox v1.0.3
 	github.com/emersion/go-message v0.18.2
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/spf13/pflag v1.0.5

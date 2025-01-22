@@ -1,7 +1,9 @@
 package main
 
 import (
+	"errors"
 	"fmt"
+	"io"
 	"mime"
 	"os"
 	"path/filepath"
@@ -11,9 +13,32 @@ import (
 	"sync"
 	"unicode/utf8"
 
+	"github.com/emersion/go-mbox"
+	"github.com/emersion/go-message"
 	_ "github.com/emersion/go-message/charset"
 	"github.com/emersion/go-message/mail"
 )
+
+func mboxParser(path string, headers chan<- *mail.Header) error {
+	f, err := os.Open(path)
+	defer f.Close()
+	if err != nil {
+		return err
+	}
+	mbr := mbox.NewReader(f)
+	for {
+		msg, err := mbr.NextMessage()
+		if errors.Is(err, io.EOF) {
+			break
+		} else if err != nil {
+			return err
+		}
+		entity, err := message.Read(msg)
+		h := &mail.Header{Header: entity.Header}
+		headers <- h
+	}
+	return nil
+}
 
 func messageParser(
 	paths chan string,
@@ -28,6 +53,10 @@ func messageParser(
 		}
 		r, err := mail.CreateReader(f)
 		if err != nil {
+			mboxerr := mboxParser(path, headers)
+			if mboxerr == nil {
+				continue
+			}
 			if utf8.ValidString(err.Error()) {
 				fmt.Fprintln(os.Stderr, path, err)
 			} else {

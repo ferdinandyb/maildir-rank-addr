@@ -282,3 +282,13 @@ func TestE2EListTemplateDisable(t *testing.T) {
 		})
 	}
 }
+
+func TestE2EMbox(t *testing.T) {
+	data := walkSources(
+		[]string{"./testdata/endtoend"},
+		[]*regexp.Regexp{regexp.MustCompile(".+@myself.me")},
+		nil,
+	)
+	classeddata := calculateRanks(data, nil, nil)
+	assert.Contains(t, classeddata[0], "git@vger.kernel.org")
+}
