@@ -13,7 +13,7 @@ func TestE2EAddressbookOverride(t *testing.T) {
 		"foo@bar.com":           "override FOO",
 		"something@example.com": "override EXAMPLE",
 	}
-	data := walkMaildirs([]string{"./testdata/endtoend"}, nil, nil)
+	data := walkSources([]string{"./testdata/endtoend"}, nil, nil)
 	classeddata := calculateRanks(data, addressbook, nil)
 
 	tests := []struct {
@@ -37,7 +37,7 @@ func TestE2EAddressbookOverride(t *testing.T) {
 }
 
 func TestE2ENormalization(t *testing.T) {
-	data := walkMaildirs([]string{"./testdata/endtoend"}, nil, nil)
+	data := walkSources([]string{"./testdata/endtoend"}, nil, nil)
 	classeddata := calculateRanks(data, nil, nil)
 
 	tests := []struct {
@@ -60,7 +60,7 @@ func TestE2ENormalization(t *testing.T) {
 }
 
 func TestE2EClass(t *testing.T) {
-	data := walkMaildirs(
+	data := walkSources(
 		[]string{"./testdata/endtoend"},
 		[]*regexp.Regexp{regexp.MustCompile(".+@myself.me")},
 		nil,
@@ -88,7 +88,7 @@ func TestE2EClass(t *testing.T) {
 }
 
 func TestE2EClassMultisource(t *testing.T) {
-	data := walkMaildirs(
+	data := walkSources(
 		[]string{"./testdata/endtoend/from_me", "./testdata/endtoend/not_from_me"},
 		[]*regexp.Regexp{regexp.MustCompile(".+@myself.me")},
 		nil,
@@ -116,7 +116,7 @@ func TestE2EClassMultisource(t *testing.T) {
 }
 
 func TestE2ERankingRecency(t *testing.T) {
-	data := walkMaildirs(
+	data := walkSources(
 		[]string{"./testdata/endtoend"},
 		[]*regexp.Regexp{regexp.MustCompile(".+@myself.me")},
 		nil,
@@ -143,7 +143,7 @@ func TestE2ERankingRecency(t *testing.T) {
 }
 
 func TestE2ERankingRecencyMultisource(t *testing.T) {
-	data := walkMaildirs(
+	data := walkSources(
 		[]string{"./testdata/endtoend/from_me", "./testdata/endtoend/not_from_me"},
 		[]*regexp.Regexp{regexp.MustCompile(".+@myself.me")},
 		nil,
@@ -170,7 +170,7 @@ func TestE2ERankingRecencyMultisource(t *testing.T) {
 }
 
 func TestE2ERankingFrequency(t *testing.T) {
-	data := walkMaildirs(
+	data := walkSources(
 		[]string{"./testdata/endtoend"},
 		[]*regexp.Regexp{regexp.MustCompile(".+@myself.me")},
 		nil,
@@ -197,7 +197,7 @@ func TestE2ERankingFrequency(t *testing.T) {
 }
 
 func TestE2ERankingFrequencyMultisource(t *testing.T) {
-	data := walkMaildirs(
+	data := walkSources(
 		[]string{"./testdata/endtoend/from_me", "./testdata/endtoend/not_from_me"},
 		[]*regexp.Regexp{regexp.MustCompile(".+@myself.me")},
 		nil,
@@ -224,7 +224,7 @@ func TestE2ERankingFrequencyMultisource(t *testing.T) {
 }
 
 func TestE2EListTemplate(t *testing.T) {
-	data := walkMaildirs(
+	data := walkSources(
 		[]string{"./testdata/endtoend"},
 		[]*regexp.Regexp{regexp.MustCompile(".+@myself.me")},
 		nil,
@@ -255,7 +255,7 @@ func TestE2EListTemplate(t *testing.T) {
 }
 
 func TestE2EListTemplateDisable(t *testing.T) {
-	data := walkMaildirs(
+	data := walkSources(
 		[]string{"./testdata/endtoend"},
 		[]*regexp.Regexp{regexp.MustCompile(".+@myself.me")},
 		nil,

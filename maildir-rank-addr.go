@@ -3,7 +3,7 @@ package main
 func main() {
 	config := loadConfig()
 	addressbook := parseAddressbook(config.addressbookLookupCommand)
-	data := walkMaildirs(
+	data := walkSources(
 		config.maildirs,
 		config.useraddresses,
 		config.customFilters,
