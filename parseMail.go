@@ -40,32 +40,38 @@ func mboxParser(path string, headers chan<- *mail.Header) error {
 	return nil
 }
 
+func emlParser(path string, headers chan<- *mail.Header) error {
+	f, err := os.Open(path)
+	defer f.Close()
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		return err
+	}
+	r, err := mail.CreateReader(f)
+	if err != nil {
+		return err
+	}
+	h := &mail.Header{Header: r.Header.Header}
+	headers <- h
+	return nil
+}
+
 func messageParser(
 	paths chan string,
 	headers chan<- *mail.Header,
 ) {
 	for path := range paths {
-		f, err := os.Open(path)
-		defer f.Close()
-		if err != nil {
-			fmt.Fprintln(os.Stderr, err)
-			continue
-		}
-		r, err := mail.CreateReader(f)
+		err := emlParser(path, headers)
 		if err != nil {
 			mboxerr := mboxParser(path, headers)
 			if mboxerr == nil {
-				continue
-			}
-			if utf8.ValidString(err.Error()) {
+				// do nothing
+			} else if utf8.ValidString(err.Error()) {
 				fmt.Fprintln(os.Stderr, path, err)
 			} else {
 				fmt.Fprintln(os.Stderr, path, "mail reader error, probably tried reading binary")
 			}
-			continue
 		}
-		h := &mail.Header{Header: r.Header.Header}
-		headers <- h
 	}
 }
 
