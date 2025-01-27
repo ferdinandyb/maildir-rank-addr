@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.4.1
+
+ - fixes crash due to too many files open on very large maildirs
+
 ## v1.4.0
 
  - multiple root mail folders can now be specified
