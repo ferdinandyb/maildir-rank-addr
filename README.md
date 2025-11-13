@@ -188,6 +188,16 @@ code the path without shell expansion.
 If you are using aerc with `[compose].edit-headers=true` you need integrate
 with your editor (e.g. with vim), instead of the above.
 
+### (neo)mutt
+
+Put something like this in your (neo)mutt config (using your favourite grep):
+
+```
+set query_command = "ugrep -jP -m 100 --color=never -e '%s' \"$HOME/.cache/maildir-rank-addr/addressbook.tsv\" | cut -f1,2"
+```
+
+Similar comments to those above for `aerc` apply.
+
 ### vim
 
 This is an example using `fzf` and the `fzf.vim` plugin. Add it to for example
